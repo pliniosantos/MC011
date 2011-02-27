@@ -3,3 +3,5 @@ MiniJava usando SableCC
         http://code.google.com/p/mmjc/wiki/RelatorioFinalDeImplementacao
 
 
+MiniJava specifications
+        http://www.cambridge.org/us/features/052182060X/
