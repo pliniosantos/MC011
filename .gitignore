@@ -1,0 +1,12 @@
+# Compiled source #
+###################
+
+*.com
+*.class
+*.exe
+*.so
+
+# Ignore miniJavaCompiler\bin #
+###############################
+
+miniJavaCompiler/bin
