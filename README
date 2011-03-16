@@ -1,4 +1,4 @@
-MC011 - Laboratório de Compiladores
+M011 - Laboratório de Compiladores
 
 Grupo G15
 Plinio Sandes dos Santos
@@ -11,7 +11,15 @@ Repositório para gerenciar o conte-
 Todo o projeto será desenvolvido
 e puclicado neste repositório.
 
+/**************************************
+*                                     *
+* NUNCA ADICIONE miniJavaCompiler/bin *
+* ao repositorio                      *
+*                                     *
+**************************************/
+
 Por favor, deixe a arvore de dire-
 tórios limpa, sem arquivos tempo-
 rários ou executáveis desnecessá-
 rios
+

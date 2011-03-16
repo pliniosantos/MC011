@@ -1,0 +1,73 @@
+Package minijava;
+
+Helpers
+
+    anychar = [0x0 .. 0xfff];
+    digit = ['0' .. '9'];
+    letter = [['a' .. 'z'] + ['A' .. 'Z']];
+
+    eol = 13 10 | 13 | 10;
+    white = 9 | ' ';
+    nostar = [anychar - '*'];
+    nostarslash = [nostar - '/'];
+    linecomment = '//' [anychar - [13 + 10]]* eol?;
+    blockcomment = '/*' nostar* '*'+ (nostarslash nostar* '*'+)* '/';
+    main = 'public' white+ 'static' white+ 'void' white+ 'main';
+
+Tokens
+    // Palavras reservadas
+    intt = 'int';
+    bool = 'boolean';
+    classtk = 'class';
+    public = 'public';
+    extends = 'extends';
+    if = 'if';
+    while = 'while';
+    else = 'else';
+    return = 'return';
+    true = 'true';
+    false = 'false';
+    this = 'this';
+    new = 'new';
+    length = 'length';
+    string = 'String';
+    print = 'System.out.println';
+
+    // Simbolos
+    lbrace = '[';
+    rbrace = ']';
+    lparen = '(';
+    rparen = ')';
+    lcurbr = '{';
+    rcurbr = '}';
+    dot = '.';
+    comma  = ',';
+    semi = ';';
+    plus = '+';
+    minus = '-';
+    times = '*';
+    gt = '>';
+    lt = '<';
+    and = '&&';
+    neg = '!';
+    eq = '=';
+
+    id = letter (letter | digit | '_')*;
+    number = '0' | ([digit - '0'] digit*);
+
+    blank = (white | eol)+;
+    comment = linecomment | blockcomment;
+  
+Ignored Tokens
+
+    blank, comment;
+
+Productions
+
+    program { -> program }
+        = ;
+
+Abstract Syntax Tree
+
+    program
+        = ;
