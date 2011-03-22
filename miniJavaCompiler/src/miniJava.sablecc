@@ -18,6 +18,7 @@ Tokens
     // Palavras reservadas
     intt = 'int';
     bool = 'boolean';
+    string = 'String';
     classtk = 'class';
     public = 'public';
     extends = 'extends';
@@ -30,7 +31,6 @@ Tokens
     this = 'this';
     new = 'new';
     length = 'length';
-    string = 'String';
     print = 'System.out.println';
 
     // Simbolos
@@ -63,11 +63,109 @@ Ignored Tokens
     blank, comment;
 
 Productions
+	// Regras baseadas em:
+	// 		http://www.cambridge.org/us/features/052182060X/grammar.html
+    goal
+        = main_class class_dec*
+        ;
 
-    program { -> program }
-        = ;
+	main_class
+		= classtk identifier lcurbr public static void main lparen string lbrace rbrace identifier lparen lcurbr statement rcurbr rcurbr
+		;
+
+	class_dec
+		= classtk identifier lcurbr var_dec* method_dec* rcurbr
+		| classtk identifier extends identifier lcurbr var_dec* method_dec* rcurbr
+		;
+
+	var_dec
+		= type identifier semi
+		;
+
+	method_dec
+		= public type identifier lparen formal_list rparen lcurbr var_dec* statement* return expression semi rcurbr
+		;
+
+	formal_list
+		= type identifier formal_list_tail
+		;
+	
+	formal_list_tail
+		= comma type identifier
+		;
+
+	type
+		= int lbrace rbrace
+		| boolean
+		| ind
+		| identifier
+		;
+		
+	statement
+		= lcurbr statement* rcurbr
+		| if lparen expression rparen statement else statement
+		| while lparen expression rparen statement
+		| print lparen expression rparen semi
+		| identifier eq expression semi
+		| identifier lbrace expression rbrace eq expression semi
+		;
+
+	expression
+		= expression lparen and rparen expression
+		| expression lparen lr rparen expression
+		| expression lparen plus rparen expression
+		| expression lparen minus rparen expression
+		| expression lparen times rparen expression
+		| expression lbrace expression rbrace
+		| expression dot length
+		| expression dot identifier lparen expression_list rparen
+		| number
+		| true
+		| false
+		| identifier
+		| this
+		| new intt lbrace expression rbrace
+		| new identifier lparen rparen
+		| not expression
+		| lparen expression rparen
+		;
+
+	expression_list
+		= expression expression_tail
+		;
+	
+	expression_tail
+		= comma expression
+		;
+
+	identifier
+		= id
+		;
+
 
 Abstract Syntax Tree
 
     program
         = ;
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
