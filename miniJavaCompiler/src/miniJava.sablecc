@@ -2,170 +2,131 @@ Package minijava;
 
 Helpers
 
-    anychar = [0x0 .. 0xfff];
-    digit = ['0' .. '9'];
-    letter = [['a' .. 'z'] + ['A' .. 'Z']];
+  and = '&&'; 
+  lthan = '<'; 
+  plus ='+'; 
+  minus = '-'; 
+  times = '*';
 
-    eol = 13 10 | 13 | 10;
-    white = 9 | ' ';
-    nostar = [anychar - '*'];
-    nostarslash = [nostar - '/'];
-    linecomment = '//' [anychar - [13 + 10]]* eol?;
-    blockcomment = '/*' nostar* '*'+ (nostarslash nostar* '*'+)* '/';
-    main = 'public' white+ 'static' white+ 'void' white+ 'main';
+  underscore = '_'; 
+  lf = 10;
+  cr = 13;
+  tab = 9;
+  line_terminator = lf | cr | cr lf;
+
+  decimal = ['0'..'9'];
+  less_char = ['a'..'z'];
+  more_char = ['A'..'Z'];
+  any_character = [0..0xffff];
+
+States
+
+normal, comentado;
 
 Tokens
-    // Palavras reservadas
-    intt = 'int';
-    bool = 'boolean';
-    string = 'String';
-    classtk = 'class';
-    public = 'public';
-    extends = 'extends';
-    if = 'if';
-    while = 'while';
-    else = 'else';
-    return = 'return';
-    true = 'true';
-    false = 'false';
-    this = 'this';
-    new = 'new';
-    length = 'length';
-    print = 'System.out.println';
 
-    // Simbolos
-    lbrace = '[';
-    rbrace = ']';
-    lparen = '(';
-    rparen = ')';
-    lcurbr = '{';
-    rcurbr = '}';
-    dot = '.';
-    comma  = ',';
-    semi = ';';
-    plus = '+';
-    minus = '-';
-    times = '*';
-    gt = '>';
-    lt = '<';
-    and = '&&';
-    neg = '!';
-    eq = '=';
+  {normal} classe = 'class';
+  {normal} public = 'public'; 
+  {normal} static = 'static'; 
+  {normal} void = 'void'; 
+  {normal} main = 'main'; 
+  {normal} string = 'String'; 
+  {normal} extends = 'extends'; 
+  {normal} return = 'return'; 
 
-    id = letter (letter | digit | '_')*;
-    number = '0' | ([digit - '0'] digit*);
+  {normal} dot = '.';
+  {normal} int = 'int'; 
+  {normal} boolean = 'boolean'; 
+  {normal} lcol = '['; 
+  {normal} rcol = ']'; 
+  {normal} lpar = '('; 
+  {normal} rpar = ')'; 
+  {normal} lbra = '{'; 
+  {normal} rbra = '}'; 
+  {normal} equal = '='; 
+  {normal} semic = ';'; 
+  {normal} comma = ',';
+  {normal} not = '!'; 
 
-    blank = (white | eol)+;
-    comment = linecomment | blockcomment;
-  
+  {normal} if = 'if'; 
+  {normal} else = 'else'; 
+  {normal} while = 'while'; 
+  {normal} print = 'System.out.println'; 
+  {normal} length = 'length'; 
+  {normal} true = 'true'; 
+  {normal} false = 'false'; 
+  {normal} this = 'this'; 
+  {normal} new = 'new';
+
+  {normal} op = and | lthan | plus | minus | times;
+
+  {normal} comment = '//' [[0..0xffff] - [10 + 13]] * line_terminator;
+
+  {normal->comentado,comentado} comment_start = '/*';
+  {comentado} comment_body = [any_character -['*' + '/']]*; 
+  {comentado} star = '*'; 
+  {comentado} slash = '/';
+  {comentado->normal} comment_end = '*/';
+
+  {normal} id = (less_char | more_char)(decimal | less_char | more_char | underscore)*;
+
+  {normal} num = decimal+;
+
+  {normal} blank = (' ' | cr | lf | tab)+;
+
+
 Ignored Tokens
 
-    blank, comment;
+  blank,comment,comment_start,comment_body,comment_end,star,slash;
+
 
 Productions
-	// Regras baseadas em:
-	// 		http://www.cambridge.org/us/features/052182060X/grammar.html
-    goal
-        = main_class class_dec*
-        ;
 
-	main_class
-		= classtk identifier lcurbr public static void main lparen string lbrace rbrace identifier lparen lcurbr statement rcurbr rcurbr
-		;
+  program = mainclass classdecl*;
+  
+  mainclass = classe [left]:id [chave1]:lbra public static void main lpar string lcol rcol [right]:id rpar [chave2]:lbra stm [chave3]:rbra [chave4]:rbra;
 
-	class_dec
-		= classtk identifier lcurbr var_dec* method_dec* rcurbr
-		| classtk identifier extends identifier lcurbr var_dec* method_dec* rcurbr
-		;
+  classdecl = {normal} classe id [c1]:lbra vardecl* methoddecl* [c2]:rbra |
+              {extend} classe [filho]:id extends [pai]:id [c3]:lbra vardecl* methoddecl* [c4]:rbra;
+  vardecl = type id semic;
 
-	var_dec
-		= type identifier semi
-		;
+  methoddecl = public type id lpar formallist rpar lbra vardecl* stm* return exp semic rbra;
 
-	method_dec
-		= public type identifier lparen formal_list rparen lcurbr var_dec* statement* return expression semi rcurbr
-		;
+  formallist = {flist}type id formalrest* |
+               {empty} ;
 
-	formal_list
-		= type identifier formal_list_tail
-		;
-	
-	formal_list_tail
-		= comma type identifier
-		;
+  formalrest = comma type id;
 
-	type
-		= int lbrace rbrace
-		| boolean
-		| ind
-		| identifier
-		;
-		
-	statement
-		= lcurbr statement* rcurbr
-		| if lparen expression rparen statement else statement
-		| while lparen expression rparen statement
-		| print lparen expression rparen semi
-		| identifier eq expression semi
-		| identifier lbrace expression rbrace eq expression semi
-		;
+  type = {array} [vetor]:int lcol rcol |
+         {bool} boolean |
+         {ints} int |
+         {others} id;
 
-	expression
-		= expression lparen and rparen expression
-		| expression lparen lr rparen expression
-		| expression lparen plus rparen expression
-		| expression lparen minus rparen expression
-		| expression lparen times rparen expression
-		| expression lbrace expression rbrace
-		| expression dot length
-		| expression dot identifier lparen expression_list rparen
-		| number
-		| true
-		| false
-		| identifier
-		| this
-		| new intt lbrace expression rbrace
-		| new identifier lparen rparen
-		| not expression
-		| lparen expression rparen
-		;
-
-	expression_list
-		= expression expression_tail
-		;
-	
-	expression_tail
-		= comma expression
-		;
-
-	identifier
-		= id
-		;
+  stm = {programa} lbra stm* rbra |
+        {ifthenelse} if lpar exp rpar [true_stm]:stm else [false_stm]:stm |
+        {loops} while [par1]:lpar [exp1]:exp [par2]:rpar [while_stm]:stm |
+        {prints} print [par3]:lpar [print_exp]:exp [par4]:rpar semic |
+        {assign} id equal [assign_exp]:exp [sc1]:semic |
+        {assign_vetor} [id1]:id lcol [vet_exp]:exp rcol [eq]:equal [assing_exp1]:exp [sc2]:semic ;
 
 
-Abstract Syntax Tree
+  exp = {binop} exp2 op exp |
+        {exps} exp2 lcol exp rcol |
+        {tam}  exp2 dot length |
+        {list} exp2 [d1]:dot id lpar explist rpar;
+  exp2 = {numero} num |
+         {trueexp} true |
+         {falseexp} false |
+         {idexp} [id_exp]:id |
+         {thisexp} this |
+         {newint} new int [col1]:lcol [int_exp]:exp [col2]:rcol |
+         {newid} [novo]:new [new_id]:id [par1]:lpar [par2]:rpar |
+         {notexp} not [not_exp]:exp |
+         {parexp} [par3]:lpar [par_exp]:exp [par4]:rpar ;
 
-    program
-        = ;
 
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+  explist = {elist}exp exprest* |
+            {empty} ;
+
+  exprest = comma exp;
+
