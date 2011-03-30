@@ -6,6 +6,8 @@ import minijava.parser.Parser;
 
 import java.io.*;
 
+import analisadores.syntaxtree.PrettyPrint;
+
 public class Main {
 
 	/**
@@ -21,7 +23,7 @@ public class Main {
 	 
 	            /* Get our Interpreter going. */
 //	            Interpreter interp = new Interpreter () ;
-//	            ast.apply(interp) ;
+	            ast.apply(new PrettyPrint()) ;
 	         }
 	         catch (Exception e) {
 	            System.out.println (e) ;
