@@ -74,7 +74,172 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseAMainclass(AMainclass node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAExtNextclass(AExtNextclass node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseANonextNextclass(ANonextNextclass node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAVar(AVar node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAMethod(AMethod node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAIfStatement(AIfStatement node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAVatbStatement(AVatbStatement node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAAtbStatement(AAtbStatement node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAWhileStatement(AWhileStatement node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAPrintStatement(APrintStatement node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAManyStatement(AManyStatement node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAMcallExpression(AMcallExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAPlusExpression(APlusExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAMinusExpression(AMinusExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAMultExpression(AMultExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAAndExpression(AAndExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAGthanExpression(AGthanExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseALthanExpression(ALthanExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAVectorExpression(AVectorExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseALengthExpression(ALengthExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseANotExpression(ANotExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseANewvecExpression(ANewvecExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAVarExpression(AVarExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseANewobjExpression(ANewobjExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseANumberExpression(ANumberExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseABtrueExpression(ABtrueExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseABfalseExpression(ABfalseExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseASelfExpression(ASelfExpression node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAInttType(AInttType node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAIntvType(AIntvType node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseABoolType(ABoolType node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAClassType(AClassType node)
+    {
+        defaultCase(node);
+    }
+
     public void caseTIntt(TIntt node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTIntv(TIntv node)
     {
         defaultCase(node);
     }
@@ -154,6 +319,21 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseTStatic(TStatic node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTVoid(TVoid node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTMain(TMain node)
+    {
+        defaultCase(node);
+    }
+
     public void caseTLbrace(TLbrace node)
     {
         defaultCase(node);
@@ -214,12 +394,12 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
-    public void caseTGt(TGt node)
+    public void caseTGthan(TGthan node)
     {
         defaultCase(node);
     }
 
-    public void caseTLt(TLt node)
+    public void caseTLthan(TLthan node)
     {
         defaultCase(node);
     }
@@ -234,7 +414,7 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
-    public void caseTEq(TEq node)
+    public void caseTBe(TBe node)
     {
         defaultCase(node);
     }

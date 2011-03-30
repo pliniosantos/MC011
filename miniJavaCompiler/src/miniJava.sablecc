@@ -1,132 +1,266 @@
 Package minijava;
 
 Helpers
-
-  and = '&&'; 
-  lthan = '<'; 
-  plus ='+'; 
-  minus = '-'; 
-  times = '*';
-
-  underscore = '_'; 
-  lf = 10;
-  cr = 13;
-  tab = 9;
-  line_terminator = lf | cr | cr lf;
-
-  decimal = ['0'..'9'];
-  less_char = ['a'..'z'];
-  more_char = ['A'..'Z'];
-  any_character = [0..0xffff];
-
-States
-
-normal, comentado;
+	anychar      		= [0x0 .. 0xfff];
+	decimal        		= ['0' .. '9'];
+	character     		= [['a' .. 'z'] + ['A' .. 'Z']];
+	cr           		= 13;
+	lf           		= 10;
+	tab          		= 9;
+	line_terminator 	= cr lf | cr | lf;
+	white_space     	= tab | ' ';
+	without_star    	= [anychar - '*'];
+	without_star_slash  = [without_star - '/'];
+	linecomment  		= '//' [anychar - [cr + lf]]* line_terminator?;
+    blockcomment 		= '/*' without_star* '*'+ (without_star_slash without_star* '*'+)* '/';
 
 Tokens
+	// Identificadores
+    intt    = 'int';
+    intv    = 'int' white_space* '[' white_space* ']';
+    bool    = 'boolean';
+    classtk = 'class';
+    public  = 'public';
+    extends = 'extends';
+    if      = 'if';
+    while   = 'while';
+    else    = 'else';
+    return  = 'return';
+    true    = 'true';
+    false   = 'false';
+    this    = 'this';
+    new     = 'new';
+    length  = 'length';
+    string  = 'String';
+    print   = 'System.out.println';
+    static  = 'static';
+    void    = 'void';
+    main    = 'main';
 
-  {normal} classe = 'class';
-  {normal} public = 'public'; 
-  {normal} static = 'static'; 
-  {normal} void = 'void'; 
-  {normal} main = 'main'; 
-  {normal} string = 'String'; 
-  {normal} extends = 'extends'; 
-  {normal} return = 'return'; 
+	// Simbolos
+    lbrace = '[';
+    rbrace = ']';
+    lparen = '(';
+    rparen = ')';
+    lcurbr = '{';
+    rcurbr = '}';
+    dot    = '.';
+    comma  = ',';
+    semi   = ';';
 
-  {normal} dot = '.';
-  {normal} int = 'int'; 
-  {normal} boolean = 'boolean'; 
-  {normal} lcol = '['; 
-  {normal} rcol = ']'; 
-  {normal} lpar = '('; 
-  {normal} rpar = ')'; 
-  {normal} lbra = '{'; 
-  {normal} rbra = '}'; 
-  {normal} equal = '='; 
-  {normal} semic = ';'; 
-  {normal} comma = ',';
-  {normal} not = '!'; 
+    plus  = '+';
+    minus = '-';
+    times = '*';
+    gthan = '>';
+    lthan = '<';
+    and   = '&&';
+    neg   = '!';
+    be    = '=';
 
-  {normal} if = 'if'; 
-  {normal} else = 'else'; 
-  {normal} while = 'while'; 
-  {normal} print = 'System.out.println'; 
-  {normal} length = 'length'; 
-  {normal} true = 'true'; 
-  {normal} false = 'false'; 
-  {normal} this = 'this'; 
-  {normal} new = 'new';
+	// Outros
+    id     = character (character | decimal | '_')*;
+    number = '0' | ([decimal - '0'] decimal*);
 
-  {normal} op = and | lthan | plus | minus | times;
-
-  {normal} comment = '//' [[0..0xffff] - [10 + 13]] * line_terminator;
-
-  {normal->comentado,comentado} comment_start = '/*';
-  {comentado} comment_body = [any_character -['*' + '/']]*; 
-  {comentado} star = '*'; 
-  {comentado} slash = '/';
-  {comentado->normal} comment_end = '*/';
-
-  {normal} id = (less_char | more_char)(decimal | less_char | more_char | underscore)*;
-
-  {normal} num = decimal+;
-
-  {normal} blank = (' ' | cr | lf | tab)+;
-
-
+	// Ignorados
+    blank   = (white_space | line_terminator)+;
+    comment = linecomment | blockcomment;
+   
 Ignored Tokens
-
-  blank,comment,comment_start,comment_body,comment_end,star,slash;
+	blank, comment;
 
 
 Productions
+    program { -> program }
+        = mainclass classdecl
+            { -> New program(mainclass, [classdecl.nextclass]) };
 
-  program = mainclass classdecl*;
+    mainclass { -> mainclass }
+        = classtk [name]:id [op]:lcurbr public static void main lparen string lbrace rbrace [arg]:id rparen [os]:lcurbr statementlist [cp]:rcurbr [cs]:rcurbr
+            { -> New mainclass(name, arg, [statementlist.statement]) };
+
+    classdecl { -> nextclass* }
+        = {ext} classtk [cname]:id extends [ename]:id lcurbr vardecl methoddecl rcurbr classdecl
+            { -> [New nextclass.ext(cname, ename, [vardecl.var], [methoddecl.method]), classdecl.nextclass] }
+        | {nonext} classtk id lcurbr vardecl methoddecl rcurbr classdecl
+            { -> [New nextclass.nonext(id, [vardecl.var], [methoddecl.method]), classdecl.nextclass] }
+        | {empty}
+        	{ -> [] };
   
-  mainclass = classe [left]:id [chave1]:lbra public static void main lpar string lcol rcol [right]:id rpar [chave2]:lbra stm [chave3]:rbra [chave4]:rbra;
+    vardecl { -> var* }
+        = {nonempty} vardecl type id semi
+            { -> [vardecl.var, New var(type, id)] }
+        | {empty}
+        	{ -> [] };
 
-  classdecl = {normal} classe id [c1]:lbra vardecl* methoddecl* [c2]:rbra |
-              {extend} classe [filho]:id extends [pai]:id [c3]:lbra vardecl* methoddecl* [c4]:rbra;
-  vardecl = type id semic;
+    methoddecl { -> method* }
+        = {nonempty} public type id lparen formallist rparen lcurbr vardecl statementlist return expr semi rcurbr methoddecl
+            { -> [New method(type, id, [formallist.var], [vardecl.var], [statementlist.statement], expr.expression), methoddecl.method] }
+        | {empty}
+        	{ -> [] };
 
-  methoddecl = public type id lpar formallist rpar lbra vardecl* stm* return exp semic rbra;
+    formallist { -> var* }
+        = {nonempty} type id formalrest
+            { -> [New var(type, id), formalrest.var] }
+        | {empty}
+        	{ -> [] };
 
-  formallist = {flist}type id formalrest* |
-               {empty} ;
+    formalrest { -> var* }
+        = {remainder} comma type id formalrest
+            { -> [New var(type, id), formalrest.var] }
+        | {empty}
+        	{ -> [] };
+    
+    statementlist { -> statement* }
+    	= {nonempty} statement statementlist
+    		{ -> [statement, statementlist.statement] }
+    	| {empty}
+    		{ -> [] };
 
-  formalrest = comma type id;
+    statement { -> statement }
+        = {nested}  lcurbr statementlist rcurbr
+            { -> New statement.many([statementlist.statement]) }
+        | {ifelse}  if lparen expr rparen [i]:statement else [e]:statement
+            { -> New statement.if(expr.expression, i.statement, e.statement) }
+        | {while}   while lparen expr rparen statement
+            { -> New statement.while(expr.expression, statement) }
+        | {print}   print lparen expr rparen semi
+            { -> New statement.print(expr.expression) }
+        | {assign}  id be expr semi
+            { -> New statement.atb(id, expr.expression) }
+        | {vassign} id lbrace [i]:expr rbrace be [v]:expr semi
+            { -> New statement.vatb(id, i.expression, v.expression) };
 
-  type = {array} [vetor]:int lcol rcol |
-         {bool} boolean |
-         {ints} int |
-         {others} id;
+    type
+        = {intt}  intt
+			{ -> New type.intt(intt) }
+        | {intv}  intv
+			{ -> New type.intv(intv) }
+        | {bool}  bool
+			{ -> New type.bool(bool) }
+        | {class} id
+			{ -> New type.class(id) };
 
-  stm = {programa} lbra stm* rbra |
-        {ifthenelse} if lpar exp rpar [true_stm]:stm else [false_stm]:stm |
-        {loops} while [par1]:lpar [exp1]:exp [par2]:rpar [while_stm]:stm |
-        {prints} print [par3]:lpar [print_exp]:exp [par4]:rpar semic |
-        {assign} id equal [assign_exp]:exp [sc1]:semic |
-        {assign_vetor} [id1]:id lcol [vet_exp]:exp rcol [eq]:equal [assing_exp1]:exp [sc2]:semic ;
+	noarrayexpr { -> expression }
+        = {name}    id
+        	{ -> New expression.var(id) }
+		| {literal} number
+            { -> New expression.number(number) }
+        | {true}    true
+            { -> New expression.btrue(true) }
+        | {false}   false
+            { -> New expression.bfalse(false) }
+        | {self}    this
+            { -> New expression.self(this) }
+		| {parexp}  lparen expr rparen
+        	{ -> expr.expression }
+        | {vaccess} noarrayexpr lbrace expr rbrace
+            { -> New expression.vector(noarrayexpr.expression, expr.expression) }
+        | {length}  primaryexpr dot length
+            { -> New expression.length(primaryexpr.expression) }
+        | {maccess} primaryexpr dot id lparen exprlist rparen
+            { -> New expression.mcall(primaryexpr.expression, id, [exprlist.expression]) }
+        | {newc} new id lparen rparen
+            { -> New expression.newobj(id) };
+
+	primaryexpr { -> expression }
+		= {newarr} new intt lbrace expr rbrace
+            { -> New expression.newvec(expr.expression) }
+		| {next}   noarrayexpr
+			{ -> noarrayexpr.expression };
+			
+	unaryexpr { -> expression }
+    	= {not}  neg unaryexpr
+    		{ -> New expression.not(unaryexpr.expression) }
+    	| {next} primaryexpr
+    		{ -> primaryexpr.expression };
+    		
+    ipexpr { -> expression }
+        = {mult} ipexpr times unaryexpr
+            { -> New expression.mult(ipexpr.expression, unaryexpr.expression) }
+        | {next} unaryexpr
+            { -> unaryexpr.expression };
+
+    iaexpr { -> expression }
+        = {plus}  iaexpr plus ipexpr
+            { -> New expression.plus(iaexpr.expression, ipexpr.expression) }
+        | {minus} iaexpr minus ipexpr
+            { -> New expression.minus(iaexpr.expression, ipexpr.expression) }
+        | {next}  ipexpr
+            { -> ipexpr.expression };
+
+    bexpr { -> expression }
+        = {greater} bexpr gthan iaexpr
+            { -> New expression.gthan(bexpr.expression, iaexpr.expression) }
+        | {less}    bexpr lthan iaexpr
+            { -> New expression.lthan(bexpr.expression, iaexpr.expression) }
+        | {next}    iaexpr
+            { -> iaexpr.expression };
+
+    expr { -> expression }
+        = {and}  expr and bexpr
+            { -> New expression.and(expr.expression, bexpr.expression) }
+        | {next} bexpr
+            { -> bexpr.expression };
+
+    exprlist { -> expression* }
+        = {nonempty} expr exprrest
+            { -> [expr.expression, exprrest.expression] }
+        | {empty}
+        	{ -> [] };
+
+    exprrest { -> expression* }
+        = {remainder} comma expr exprrest
+            { -> [expr.expression, exprrest.expression] }
+        | {empty}
+        	{ -> [] };
 
 
-  exp = {binop} exp2 op exp |
-        {exps} exp2 lcol exp rcol |
-        {tam}  exp2 dot length |
-        {list} exp2 [d1]:dot id lpar explist rpar;
-  exp2 = {numero} num |
-         {trueexp} true |
-         {falseexp} false |
-         {idexp} [id_exp]:id |
-         {thisexp} this |
-         {newint} new int [col1]:lcol [int_exp]:exp [col2]:rcol |
-         {newid} [novo]:new [new_id]:id [par1]:lpar [par2]:rpar |
-         {notexp} not [not_exp]:exp |
-         {parexp} [par3]:lpar [par_exp]:exp [par4]:rpar ;
+Abstract Syntax Tree
+    program
+        = mainclass nextclass*;
 
+    mainclass
+        = [cn]:id [an]:id statement*;
 
-  explist = {elist}exp exprest* |
-            {empty} ;
+    nextclass
+        = {ext}    [name]:id [ext]:id var* method*
+        | {nonext} id var* method*;
 
-  exprest = comma exp;
+    var
+       = type id;
 
+    method
+        = type id [param]:var* [local]:var* statement* expression;
+
+    statement
+        = {if}    expression [i]:statement [e]:statement
+        | {vatb}  id [i]:expression [v]:expression
+        | {atb}   id expression
+        | {while} expression statement
+        | {print} expression
+        | {many}  statement*;
+
+    expression
+        = {mcall}  [obj]:expression id [par]:expression*
+        | {plus}   [l]:expression [r]:expression
+        | {minus}  [l]:expression [r]:expression
+        | {mult}   [l]:expression [r]:expression
+        | {and}    [l]:expression [r]:expression
+        | {gthan}  [l]:expression [r]:expression
+        | {lthan}  [l]:expression [r]:expression
+        | {vector} [l]:expression [i]:expression
+        | {length} expression
+        | {not}    expression
+        | {newvec} expression
+        | {var}    id
+        | {newobj} id
+        | {number} number
+        | {btrue}  true
+        | {bfalse} false
+        | {self}   this;
+    
+    type
+        = {intt}  intt
+        | {intv}  intv
+        | {bool}  bool
+        | {class} id;
