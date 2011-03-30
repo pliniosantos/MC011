@@ -23,3 +23,9 @@ tórios limpa, sem arquivos tempo-
 rários ou executáveis desnecessá-
 rios
 
+
+Para execuçao do código:
+Dentro da pasta src
+java -jar sablecc.jar miniJava.sablecc
+javac minijava/main/Main.java
+java minijava/main/Main [path do arquivo de teste] (por exemplo ../../testes/small/2/11)
