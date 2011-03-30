@@ -224,11 +224,6 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
-    public void caseAIntmType(AIntmType node)
-    {
-        defaultCase(node);
-    }
-
     public void caseABoolType(ABoolType node)
     {
         defaultCase(node);
@@ -245,11 +240,6 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseTIntv(TIntv node)
-    {
-        defaultCase(node);
-    }
-
-    public void caseTIntm(TIntm node)
     {
         defaultCase(node);
     }

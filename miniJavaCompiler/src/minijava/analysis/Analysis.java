@@ -43,13 +43,11 @@ public interface Analysis extends Switch
     void caseASelfExpression(ASelfExpression node);
     void caseAInttType(AInttType node);
     void caseAIntvType(AIntvType node);
-    void caseAIntmType(AIntmType node);
     void caseABoolType(ABoolType node);
     void caseAClassType(AClassType node);
 
     void caseTIntt(TIntt node);
     void caseTIntv(TIntv node);
-    void caseTIntm(TIntm node);
     void caseTBool(TBool node);
     void caseTClasstk(TClasstk node);
     void caseTPublic(TPublic node);

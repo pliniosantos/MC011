@@ -843,27 +843,6 @@ public class DepthFirstAdapter extends AnalysisAdapter
         outAIntvType(node);
     }
 
-    public void inAIntmType(AIntmType node)
-    {
-        defaultIn(node);
-    }
-
-    public void outAIntmType(AIntmType node)
-    {
-        defaultOut(node);
-    }
-
-    @Override
-    public void caseAIntmType(AIntmType node)
-    {
-        inAIntmType(node);
-        if(node.getIntm() != null)
-        {
-            node.getIntm().apply(this);
-        }
-        outAIntmType(node);
-    }
-
     public void inABoolType(ABoolType node)
     {
         defaultIn(node);

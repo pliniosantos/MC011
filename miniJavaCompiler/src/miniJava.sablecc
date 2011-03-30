@@ -18,7 +18,6 @@ Tokens
 	// Identificadores
     intt    = 'int';
     intv    = 'int' white_space* '[' white_space* ']';
-    intm	= 'int' white_space* '[' white_space* ']' white_space* '[' white_space* ']';
     bool    = 'boolean';
     classtk = 'class';
     public  = 'public';
@@ -136,8 +135,6 @@ Productions
 			{ -> New type.intt(intt) }
         | {intv}  intv
 			{ -> New type.intv(intv) }
-		| {intm}  intm
-			{ -> New type.intm(intm) }
         | {bool}  bool
 			{ -> New type.bool(bool) }
         | {class} id
@@ -172,8 +169,8 @@ Productions
 			{ -> noarrayexpr.expression };
 			
 	matrixaccess { -> expression* }
-		= {nonempty} lbrace expr rbrace
-			{ -> [expr.expression] }
+		= {nonempty} lbrace expr rbrace matrixaccess
+			{ -> [expr.expression, matrixaccess.expression] }
 		| {empty}
         	{ -> [] }; 
         	
@@ -271,6 +268,5 @@ Abstract Syntax Tree
     type
         = {intt}  intt
         | {intv}  intv
-        | {intm}  intm
         | {bool}  bool
         | {class} id;
