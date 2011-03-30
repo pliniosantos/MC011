@@ -55,23 +55,26 @@ public class PrettyPrint extends DepthFirstAdapter
         this(System.out);
     }
 
-    public void inAMainclass(AMainclass node)
-    {
-	print("class " + node.getCn().getText());
-	println(" {");
-	beginNest();
-		
-	print( "public static void main(String[] " + node.getAn().getText());
-	println( ") {");
-	beginNest();
+    public void inAMainclass(AMainclass node) {
+        print("< "+node.getClass().getSimpleName()+" > ");
+        print("class name = "+node.getCn().toString());
+        print(", ");
+        println("args name = "+node.getAn().toString());
+        beginNest();
     }
 
-    public void outAMainclass(AMainclass node)
-    {
-	endNest();
-	println("}");
-	endNest();
-	println("}");
+    public void outAMainclass(AMainclass node) {
+        endNest();
+    }
+
+    public void inAPrintStatement(APrintStatement node) {
+        print("< "+node.getClass().getSimpleName()+" > ");
+        println("expression name = "+node.getExpression().toString());
+        beginNest();
+    }
+
+    public void outAPrintStatement(APrintStatement node) {
+        endNest();
     }
 //
 //    public void caseASimpleClassDecl(ASimpleClassDecl node)
