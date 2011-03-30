@@ -55,11 +55,22 @@ public class PrettyPrint extends DepthFirstAdapter
         this(System.out);
     }
 
+    // program
+    public void inAProgram(AProgram node) {
+        println("<"+node.getClass().getSimpleName()+"> ");
+        beginNest();
+    }
+
+    public void outAProgram(AProgram node) {
+        endNest();
+    }
+    
+    // mainclass
     public void inAMainclass(AMainclass node) {
-        print("< "+node.getClass().getSimpleName()+" > ");
-        print("class name = "+node.getCn().toString());
+        print("<"+node.getClass().getSimpleName()+"> ");
+        print("class name: "+node.getCn().toString());
         print(", ");
-        println("args name = "+node.getAn().toString());
+        println("args name: "+node.getAn().toString());
         beginNest();
     }
 
@@ -67,409 +78,380 @@ public class PrettyPrint extends DepthFirstAdapter
         endNest();
     }
 
+    // nextclass {ext}
+    public void inAExtNextclass(AExtNextclass node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        print("class name: "+node.getName().toString());
+        print(", ");
+        print("extends: "+node.getExt().toString());
+//        if (!node.getVar().isEmpty()) {
+//            print(", fields: {");
+//            for(PVar var: node.getVar()) {
+//                print("["+var.toString()+"] ");
+//            }
+//            print("} ");
+//        }
+//        if (!node.getMethod().isEmpty()) {
+//            print(", methods: { ");
+//            for(PMethod method: node.getMethod()) {
+//                print("["+method.toString()+"] ");
+//            }
+//            print("} ");
+//        }
+        println("");
+        beginNest();
+    }
+
+    public void outAExtNextclass(AExtNextclass node) {
+        endNest();
+    }    
+
+    // nextclass {noext}
+    public void inANonextNextclass(ANonextNextclass node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        print("class name: "+node.getId().toString());
+//        if (!node.getVar().isEmpty()) {
+//            print(", fields: {");
+//            for(PVar var: node.getVar()) {
+//                print("["+var.toString()+"] ");
+//            }
+//            print("} ");
+//        }
+//        if (!node.getMethod().isEmpty()) {
+//            print(", methods: { ");
+//            for (PMethod method: node.getMethod()) {
+//                print("["+method.toString()+"] ");
+//            }
+//            print("} ");
+//        }
+        println("");
+        beginNest();
+    }
+
+    public void outANonextNextclass(ANonextNextclass node) {
+        endNest();
+    }
+
+    // var
+    public void inAVar(AVar node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        print("type: "+node.getType().toString());
+        println(", id: "+node.getId().toString());
+    }
+
+    public void outAVar(AVar node) {
+        // Sempre sera folha da AST
+    }
+
+    // method
+    public void inAMethod(AMethod node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        print("return type: "+node.getType().toString());
+        print(", id: "+node.getId().toString());
+//        if (!node.getParam().isEmpty()) {
+//            print(", formal list: ");
+//            for (PVar param: node.getParam()) {
+//                
+//            }
+//        }
+        println("");
+        beginNest();
+    }
+
+    public void outAMethod(AMethod node) {
+        endNest();
+    }
+
+    // statement if
+    public void inAIfStatement(AIfStatement node) {
+        println("<"+node.getClass().getSimpleName()+"> ");
+        beginNest();
+    }
+
+    public void outAIfStatement(AIfStatement node) {
+        endNest();
+    }
+    
+    // statement { vatb }
+    public void inAVatbStatement(AVatbStatement node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        println("id: "+node.getId().toString());
+//        print(", left expresion: "+node.getI().toString());
+//        println(", right expresion: "+node.getV().toString());
+        beginNest();
+    }
+
+    public void outAVatbStatement(AVatbStatement node) {
+        endNest();
+    }
+
+    // statement { atb }
+    public void inAAtbStatement(AAtbStatement node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        println("id: "+node.getId().toString());
+        beginNest();
+    }
+
+    public void outAAtbStatement(AAtbStatement node) {
+        endNest();
+    }
+    
+    // statement { while }
+    public void inAWhileStatement(AWhileStatement node) {
+        println("<"+node.getClass().getSimpleName()+"> ");
+        beginNest();
+    }
+
+    public void outAWhileStatement(AWhileStatement node) {
+        endNest();
+    }
+    
+    // statement { print }
     public void inAPrintStatement(APrintStatement node) {
-        print("< "+node.getClass().getSimpleName()+" > ");
-        println("expression name = "+node.getExpression().toString());
+        println("<"+node.getClass().getSimpleName()+"> ");
+//        println("expression: "+node.getExpression().toString());
         beginNest();
     }
 
     public void outAPrintStatement(APrintStatement node) {
         endNest();
     }
-//
-//    public void caseASimpleClassDecl(ASimpleClassDecl node)
-//    {
-//        inASimpleClassDecl(node);
-//	print("class " + node.getClassName().getText());
-//	println( " {" );
-//	beginNest();
-//        {
-//            List<PVarDecl> copy = new ArrayList<PVarDecl>(node.getVarDecl());
-//            for(PVarDecl e : copy)
-//            {
-//                e.apply(this);
-//		println(";");
-//            }
-//        }
-//        {
-//            List<PMethodDecl> copy = new ArrayList<PMethodDecl>(node.getMethodDecl());
-//            for(PMethodDecl e : copy)
-//            {
-//                e.apply(this);
-//            }
-//        }
-//	endNest();
-//	println("}");
-//        outASimpleClassDecl(node);
-//    }
-//
-//    public void caseAExtendsClassDecl(AExtendsClassDecl node)
-//    {
-//        inAExtendsClassDecl(node);
-//	print("class " + node.getClassName().getText());
-//	print( " extends " + node.getParentName().getText());
-//	println(" {");
-//	beginNest();
-//        {
-//            List<PVarDecl> copy = new ArrayList<PVarDecl>(node.getVarDecl());
-//            for(PVarDecl e : copy)
-//            {
-//                e.apply(this);
-//		println(";");
-//            }
-//        }
-//        {
-//            List<PMethodDecl> copy = new ArrayList<PMethodDecl>(node.getMethodDecl());
-//            for(PMethodDecl e : copy)
-//            {
-//                e.apply(this);
-//            }
-//        }
-//	endNest();
-//	println("}");
-//        outAExtendsClassDecl(node);
-//    }
-//
-//    public void outAVarDecl(AVarDecl node)
-//    {
-//	print(node.getId().getText());
-//    }
-//
-//    public void caseAMethodDecl(AMethodDecl node)
-//    {
-//        inAMethodDecl(node);
-//	print("public ");
-//        if(node.getType() != null)
-//        {
-//            node.getType().apply(this);
-//        }
-//	print(node.getId().getText());
-//	print( "(");
-//	{
-//	    List<PVarDecl> copy = new ArrayList<PVarDecl>(node.getArgs());
-//	    if(copy.size()>0){
-//		for(int i = 0; i<copy.size()-1; i++)
-//		    {
-//			copy.get(i).apply(this);
-//			print(", ");
-//		    }
-//		copy.get(copy.size()-1).apply(this);
-//	    }
-//	}
-//	print(")");
-//	println(" {");
-//	beginNest();
-//        {
-//            List<PVarDecl> copy = new ArrayList<PVarDecl>(node.getLocals());
-//            for(PVarDecl e : copy)
-//            {
-//                e.apply(this);
-//		println(";");
-//            }
-//        }
-//        {
-//            List<PStatement> copy = new ArrayList<PStatement>(node.getStatement());
-//            for(PStatement e : copy)
-//            {
-//                e.apply(this);
-//            }
-//        }
-//	print("return ");
-//        if(node.getExp() != null)
-//        {
-//            node.getExp().apply(this);
-//        }
-//	println(";");
-//	endNest();
-//	println("}");
-//        outAMethodDecl(node);
-//    }
-//
-//    public void inAIntArrayType(AIntArrayType node)
-//    {
-//        print("int[] ");
-//    }
-//
-//    public void inABooleanType(ABooleanType node)
-//    {
-//        print("boolean ");
-//    }
-//
-//    public void inAIntType(AIntType node)
-//    {
-//        print("int ");
-//    }
-//
-//    public void inAIdType(AIdType node)
-//    {
-//        print(node.getId().getText() + " ");
-//    }
-//
-//    public void inABlockStatement(ABlockStatement node)
-//    {
-//	println("{");
-//	beginNest();
-//    }
-//
-//    public void outABlockStatement(ABlockStatement node)
-//    {
-//	endNest();
-//	println("}");
-//    }
-//
-//    public void caseAIfStatement(AIfStatement node)
-//    {
-//        inAIfStatement(node);
-//	print( "if (" );
-//        if(node.getCondition() != null)
-//        {
-//            node.getCondition().apply(this);
-//        }
-//	print( ") " );
-//        if(node.getThenClause() != null)
-//        {
-//            node.getThenClause().apply(this);
-//        }
-//        if(node.getElseClause() != null)
-//        {
-//	    print("else ");
-//            node.getElseClause().apply(this);
-//        }
-//        outAIfStatement(node);
-//    }
-//
-//    public void caseAWhileStatement(AWhileStatement node)
-//    {
-//        inAWhileStatement(node);
-//	print( "while(" );
-//        if(node.getCondition() != null)
-//        {
-//            node.getCondition().apply(this);
-//        }
-//	print( ") " );
-//        if(node.getBody() != null)
-//        {
-//            node.getBody().apply(this);
-//        }
-//        outAWhileStatement(node);
-//    }
-//
-//    public void inAPrintStatement(APrintStatement node)
-//    {
-//	print( "System.out.println(" );
-//    }
-//
-//    public void outAPrintStatement(APrintStatement node)
-//    {
-//	println( ");" );
-//    }
-//
-//    public void caseAAssignStatement(AAssignStatement node)
-//    {
-//        inAAssignStatement(node);
-//	print(node.getVar().getText() + " = " );
-//        if(node.getValue() != null)
-//        {
-//            node.getValue().apply(this);
-//        }
-//	println( ";" );
-//        outAAssignStatement(node);
-//    }
-//
-//    public void caseAArrayAssignStatement(AArrayAssignStatement node)
-//    {
-//        inAArrayAssignStatement(node);
-//	print(node.getVar().getText() + "[" );
-//        if(node.getIndex() != null)
-//        {
-//            node.getIndex().apply(this);
-//        }
-//	print( "] = " );
-//        if(node.getValue() != null)
-//        {
-//            node.getValue().apply(this);
-//        }
-//	println( ";" );
-//        outAArrayAssignStatement(node);
-//    }
-//
-//    public void caseAAndExp(AAndExp node)
-//    {
-//        inAAndExp(node);
-//        if(node.getLeft() != null)
-//        {
-//            node.getLeft().apply(this);
-//        }
-//	print( " && ");
-//        if(node.getRight() != null)
-//        {
-//            node.getRight().apply(this);
-//        }
-//        outAAndExp(node);
-//    }
-//
-//    public void caseALessExp(ALessExp node)
-//    {
-//        inALessExp(node);
-//        if(node.getLeft() != null)
-//        {
-//            node.getLeft().apply(this);
-//        }
-//	print( " < ");
-//        if(node.getRight() != null)
-//        {
-//            node.getRight().apply(this);
-//        }
-//        outALessExp(node);
-//    }
-//
-//    public void caseAPlusExp(APlusExp node)
-//    {
-//        inAPlusExp(node);
-//        if(node.getLeft() != null)
-//        {
-//            node.getLeft().apply(this);
-//        }
-//	print( " + ");
-//        if(node.getRight() != null)
-//        {
-//            node.getRight().apply(this);
-//        }
-//        outAPlusExp(node);
-//    }
-//
-//    public void caseAMinusExp(AMinusExp node)
-//    {
-//        inAMinusExp(node);
-//        if(node.getLeft() != null)
-//        {
-//            node.getLeft().apply(this);
-//        }
-//	print( " - ");
-//        if(node.getRight() != null)
-//        {
-//            node.getRight().apply(this);
-//        }
-//        outAMinusExp(node);
-//    }
-//
-//    @Override
-//    public void caseATimesExp(ATimesExp node)
-//    {
-//        inATimesExp(node);
-//        if(node.getLeft() != null)
-//        {
-//            node.getLeft().apply(this);
-//        }
-//	print( " * ");
-//        if(node.getRight() != null)
-//        {
-//            node.getRight().apply(this);
-//        }
-//        outATimesExp(node);
-//    }
-//
-//
-//    public void caseALookupExp(ALookupExp node)
-//    {
-//        inALookupExp(node);
-//        if(node.getBase() != null)
-//        {
-//            node.getBase().apply(this);
-//        }
-//	print( "[" );
-//        if(node.getIndex() != null)
-//        {
-//            node.getIndex().apply(this);
-//        }
-//	print( "]" );
-//        outALookupExp(node);
-//    }
-//
-//    public void caseALengthExp(ALengthExp node)
-//    {
-//        inALengthExp(node);
-//        if(node.getExp() != null)
-//        {
-//            node.getExp().apply(this);
-//        }
-//	print(".length");
-//        outALengthExp(node);
-//    }
-//
-//    public void caseAMemberExp(AMemberExp node)
-//    {
-//        inAMemberExp(node);
-//        if(node.getObject() != null)
-//        {
-//            node.getObject().apply(this);
-//        }
-//	print("." + node.getMemberName().getText() + "(");
-//	List<PExp> copy = new ArrayList<PExp>(node.getArgs());
-//        if(copy.size()>0){
-//            for(int i = 0; i<copy.size()-1; i++)
-//            {
-//                copy.get(i).apply(this);
-//		print(", ");
-//            }
-//	    copy.get(copy.size()-1).apply(this);
-//        }
-//	print(")");
-//        outAMemberExp(node);
-//    }
-//
-//    public void inANotExp(ANotExp node)
-//    {
-//	print( "!" );
-//    }
-//
-//    public void inAParenExp(AParenExp node)
-//    {
-//        print("(");
-//    }
-//
-//    public void outAParenExp(AParenExp node)
-//    {
-//        print(")");
-//    }
-//
-//    public void inAIntegerExp(AIntegerExp node)
-//    {
-//	print(node.getInteger().getText());
-//    }
-//
-//    public void inATrueExp(ATrueExp node)
-//    {
-//        print("true");
-//    }
-//
-//    public void inAFalseExp(AFalseExp node)
-//    {
-//        print("false");
-//    }
-//
-//    public void inAIdExp(AIdExp node)
-//    {
-//        print(node.getId().getText());
-//    }
-//
-//    public void inAThisExp(AThisExp node)
-//    {
-//	print("this");
-//    }
-//
-//    public void inANewArrayExp(ANewArrayExp node)
-//    {
-//	print( "new int[" );
-//    }
-//
-//    public void outANewArrayExp(ANewArrayExp node)
-//    {
-//	print( "]" );
-//    }
-//
-//    public void inANewObjectExp(ANewObjectExp node)
-//    {
-//	print( "new " + node.getClassName().getText() + "()");
-//    }
+    
+    // statement { many }
+    public void inAManyStatement(AManyStatement node) {
+        println("<"+node.getClass().getSimpleName()+"> ");
+        beginNest();
+    }
+
+    public void outAManyStatement(AManyStatement node) {
+        endNest();
+    }
+    
+    // expression { mcall }
+    public void inAMcallExpression(AMcallExpression node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        println("id: "+node.getId().toString());
+        beginNest();
+    }
+
+    public void outAMcallExpression(AMcallExpression node) {
+        endNest();
+    }
+    
+    // expression { plus }
+    public void inAPlusExpression(APlusExpression node) {
+        println("<"+node.getClass().getSimpleName()+"> ");
+        beginNest();
+    }
+
+    public void outAPlusExpression(APlusExpression node) {
+        endNest();
+    }
+    
+    // expression { minus }
+    public void inAMinusExpression(AMinusExpression node) {
+        println("<"+node.getClass().getSimpleName()+"> ");
+        beginNest();
+    }
+
+    public void outAMinusExpression(AMinusExpression node) {
+        endNest();
+    }
+    
+    // expression { mult }
+    public void inAMultExpression(AMultExpression node) {
+        println("<"+node.getClass().getSimpleName()+"> ");
+        beginNest();
+    }
+
+    public void outAMultExpression(AMultExpression node) {
+        endNest();
+    }
+    
+    // expression { and }
+    public void inAAndExpression(AAndExpression node) {
+        println("<"+node.getClass().getSimpleName()+"> ");
+        beginNest();
+    }
+
+    public void outAAndExpression(AAndExpression node) {
+        endNest();
+    }
+    
+    // expression { gthan }
+    public void inAGthanExpression(AGthanExpression node) {
+        println("<"+node.getClass().getSimpleName()+"> ");
+        beginNest();
+    }
+
+    public void outAGthanExpression(AGthanExpression node) {
+        endNest();
+    }
+    
+    // expression { lthan }
+    public void inALthanExpression(ALthanExpression node) {
+        println("<"+node.getClass().getSimpleName()+"> ");
+        beginNest();
+    }
+
+    public void outALthanExpression(ALthanExpression node) {
+        endNest();
+    }
+    
+    // expression { vector }
+    public void inAVectorExpression(AVectorExpression node) {
+        println("<"+node.getClass().getSimpleName()+"> ");
+        beginNest();
+    }
+
+    public void outAVectorExpression(AVectorExpression node) {
+        endNest();
+    }
+    
+    // expression { length }
+    public void inALengthExpression(ALengthExpression node) {
+        println("<"+node.getClass().getSimpleName()+"> ");
+        beginNest();
+    }
+
+    public void outALengthExpression(ALengthExpression node) {
+        endNest();
+    }
+    
+    // expression { not }
+    public void inANotExpression(ANotExpression node) {
+        println("<"+node.getClass().getSimpleName()+"> ");
+        beginNest();
+    }
+
+    public void outANotExpression(ANotExpression node) {
+        endNest();
+    }
+    
+    // expression { newvec }
+    public void inANewvecExpression(ANewvecExpression node) {
+        println("<"+node.getClass().getSimpleName()+"> ");
+        beginNest();
+    }
+
+    public void outANewvecExpression(ANewvecExpression node) {
+    }
+    
+    // expression { var }
+    public void inAVarExpression(AVarExpression node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        println("id: "+node.getId().toString());
+        beginNest();
+    }
+
+    public void outAVarExpression(AVarExpression node) {
+        endNest();
+    }
+    
+    // expression { newobj }
+    public void inANewobjExpression(ANewobjExpression node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        println("id: "+node.getId().toString());
+        beginNest();
+    }
+
+    public void outANewobjExpression(ANewobjExpression node) {
+        endNest();
+    }
+    
+    // expression { number }
+    public void inANumberExpression(ANumberExpression node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        println("id: "+node.getNumber().toString());
+        beginNest();
+    }
+
+    public void outANumberExpression(ANumberExpression node) {
+        endNest();
+    }
+    
+    // expression { btrue }
+    public void inABtrueExpression(ABtrueExpression node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        println("id: "+node.getTrue().toString());
+        beginNest();
+    }
+
+    public void outABtrueExpression(ABtrueExpression node) {
+        endNest();
+    }
+    
+    // expression { bfalse }
+    public void inABfalseExpression(ABfalseExpression node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        println("id: "+node.getFalse().toString());
+        beginNest();
+    }
+
+    public void outABfalseExpression(ABfalseExpression node) {
+        endNest();
+    }
+    
+    // expression { self }
+    public void inASelfExpression(ASelfExpression node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        println("id: "+node.getThis().toString());
+        beginNest();
+    }
+
+    public void outASelfExpression(ASelfExpression node) {
+        endNest();
+    }
+    
+    // type { intt }
+    public void inAInttType(AInttType node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        println("id: "+node.getIntt().toString());
+        beginNest();
+    }
+
+    public void outAInttType(AInttType node) {
+        endNest();
+    }
+    
+    // type { intv }
+    public void inAIntvType(AIntvType node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        println("id: "+node.getIntv().toString());
+        beginNest();
+    }
+
+    public void outAIntvType(AIntvType node) {
+        endNest();
+    }
+    
+    // type { bool }
+    public void inABoolType(ABoolType node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        println("id: "+node.getBool().toString());
+        beginNest();
+    }
+
+    public void outABoolType(ABoolType node) {
+        endNest();
+    }
+    
+    // type { class }
+    public void inAClassType(AClassType node) {
+        print("<"+node.getClass().getSimpleName()+"> ");
+        println("id: "+node.getId().toString());
+        beginNest();
+    }
+
+    public void outAClassType(AClassType node) {
+        endNest();
+    }
 }
+
+
+
+
+
+
+
+
