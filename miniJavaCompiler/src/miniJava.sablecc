@@ -1,12 +1,12 @@
 Package minijava;
 
 Helpers
-	anychar      		= [0x0 .. 0xfff];
+	tab          		= 9;
+	lf           		= 10;
+	cr           		= 13;
 	decimal        		= ['0' .. '9'];
 	character     		= [['a' .. 'z'] + ['A' .. 'Z']];
-	cr           		= 13;
-	lf           		= 10;
-	tab          		= 9;
+	anychar      		= [0x0 .. 0xfff];
 	line_terminator 	= cr lf | cr | lf;
 	white_space     	= tab | ' ';
 	without_star    	= [anychar - '*'];
@@ -18,6 +18,7 @@ Tokens
 	// Identificadores
     intt    = 'int';
     intv    = 'int' white_space* '[' white_space* ']';
+    intm	= 'int' white_space* '[' white_space* ']' white_space* '[' white_space* ']';
     bool    = 'boolean';
     classtk = 'class';
     public  = 'public';
@@ -135,6 +136,8 @@ Productions
 			{ -> New type.intt(intt) }
         | {intv}  intv
 			{ -> New type.intv(intv) }
+		| {intm}  intm
+			{ -> New type.intm(intm) }
         | {bool}  bool
 			{ -> New type.bool(bool) }
         | {class} id
@@ -153,7 +156,7 @@ Productions
             { -> New expression.self(this) }
 		| {parexp}  lparen expr rparen
         	{ -> expr.expression }
-        | {vaccess} noarrayexpr lbrace expr rbrace
+        | {vaccess} noarrayexpr lbrace expr rbrace 
             { -> New expression.vector(noarrayexpr.expression, expr.expression) }
         | {length}  primaryexpr dot length
             { -> New expression.length(primaryexpr.expression) }
@@ -163,11 +166,17 @@ Productions
             { -> New expression.newobj(id) };
 
 	primaryexpr { -> expression }
-		= {newarr} new intt lbrace expr rbrace
-            { -> New expression.newvec(expr.expression) }
+		= {newarr} new intt lbrace expr rbrace matrixaccess
+            { -> New expression.newvec(expr.expression, [matrixaccess.expression]) }
 		| {next}   noarrayexpr
 			{ -> noarrayexpr.expression };
 			
+	matrixaccess { -> expression* }
+		= {nonempty} lbrace expr rbrace
+			{ -> [expr.expression] }
+		| {empty}
+        	{ -> [] }; 
+        	
 	unaryexpr { -> expression }
     	= {not}  neg unaryexpr
     		{ -> New expression.not(unaryexpr.expression) }
@@ -248,10 +257,10 @@ Abstract Syntax Tree
         | {and}    [l]:expression [r]:expression
         | {gthan}  [l]:expression [r]:expression
         | {lthan}  [l]:expression [r]:expression
-        | {vector} [l]:expression [i]:expression
+        | {vector} [l]:expression [e]:expression
         | {length} expression
         | {not}    expression
-        | {newvec} expression
+        | {newvec} [l]:expression [i]:expression*
         | {var}    id
         | {newobj} id
         | {number} number
@@ -262,5 +271,6 @@ Abstract Syntax Tree
     type
         = {intt}  intt
         | {intv}  intv
+        | {intm}  intm
         | {bool}  bool
         | {class} id;

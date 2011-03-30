@@ -2,12 +2,14 @@
 
 package minijava.node;
 
+import java.util.*;
 import minijava.analysis.*;
 
 @SuppressWarnings("nls")
 public final class ANewvecExpression extends PExpression
 {
-    private PExpression _expression_;
+    private PExpression _l_;
+    private final LinkedList<PExpression> _i_ = new LinkedList<PExpression>();
 
     public ANewvecExpression()
     {
@@ -15,10 +17,13 @@ public final class ANewvecExpression extends PExpression
     }
 
     public ANewvecExpression(
-        @SuppressWarnings("hiding") PExpression _expression_)
+        @SuppressWarnings("hiding") PExpression _l_,
+        @SuppressWarnings("hiding") List<PExpression> _i_)
     {
         // Constructor
-        setExpression(_expression_);
+        setL(_l_);
+
+        setI(_i_);
 
     }
 
@@ -26,7 +31,8 @@ public final class ANewvecExpression extends PExpression
     public Object clone()
     {
         return new ANewvecExpression(
-            cloneNode(this._expression_));
+            cloneNode(this._l_),
+            cloneList(this._i_));
     }
 
     public void apply(Switch sw)
@@ -34,16 +40,16 @@ public final class ANewvecExpression extends PExpression
         ((Analysis) sw).caseANewvecExpression(this);
     }
 
-    public PExpression getExpression()
+    public PExpression getL()
     {
-        return this._expression_;
+        return this._l_;
     }
 
-    public void setExpression(PExpression node)
+    public void setL(PExpression node)
     {
-        if(this._expression_ != null)
+        if(this._l_ != null)
         {
-            this._expression_.parent(null);
+            this._l_.parent(null);
         }
 
         if(node != null)
@@ -56,23 +62,49 @@ public final class ANewvecExpression extends PExpression
             node.parent(this);
         }
 
-        this._expression_ = node;
+        this._l_ = node;
+    }
+
+    public LinkedList<PExpression> getI()
+    {
+        return this._i_;
+    }
+
+    public void setI(List<PExpression> list)
+    {
+        this._i_.clear();
+        this._i_.addAll(list);
+        for(PExpression e : list)
+        {
+            if(e.parent() != null)
+            {
+                e.parent().removeChild(e);
+            }
+
+            e.parent(this);
+        }
     }
 
     @Override
     public String toString()
     {
         return ""
-            + toString(this._expression_);
+            + toString(this._l_)
+            + toString(this._i_);
     }
 
     @Override
     void removeChild(@SuppressWarnings("unused") Node child)
     {
         // Remove child
-        if(this._expression_ == child)
+        if(this._l_ == child)
         {
-            this._expression_ = null;
+            this._l_ = null;
+            return;
+        }
+
+        if(this._i_.remove(child))
+        {
             return;
         }
 
@@ -83,10 +115,28 @@ public final class ANewvecExpression extends PExpression
     void replaceChild(@SuppressWarnings("unused") Node oldChild, @SuppressWarnings("unused") Node newChild)
     {
         // Replace child
-        if(this._expression_ == oldChild)
+        if(this._l_ == oldChild)
         {
-            setExpression((PExpression) newChild);
+            setL((PExpression) newChild);
             return;
+        }
+
+        for(ListIterator<PExpression> i = this._i_.listIterator(); i.hasNext();)
+        {
+            if(i.next() == oldChild)
+            {
+                if(newChild != null)
+                {
+                    i.set((PExpression) newChild);
+                    newChild.parent(this);
+                    oldChild.parent(null);
+                    return;
+                }
+
+                i.remove();
+                oldChild.parent(null);
+                return;
+            }
         }
 
         throw new RuntimeException("Not a child.");

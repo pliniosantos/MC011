@@ -5,22 +5,26 @@ package minijava.node;
 import minijava.analysis.*;
 
 @SuppressWarnings("nls")
-public final class AVectorExpression extends PExpression
+public final class AMatrixExpression extends PExpression
 {
     private PExpression _l_;
+    private PExpression _i_;
     private PExpression _e_;
 
-    public AVectorExpression()
+    public AMatrixExpression()
     {
         // Constructor
     }
 
-    public AVectorExpression(
+    public AMatrixExpression(
         @SuppressWarnings("hiding") PExpression _l_,
+        @SuppressWarnings("hiding") PExpression _i_,
         @SuppressWarnings("hiding") PExpression _e_)
     {
         // Constructor
         setL(_l_);
+
+        setI(_i_);
 
         setE(_e_);
 
@@ -29,14 +33,15 @@ public final class AVectorExpression extends PExpression
     @Override
     public Object clone()
     {
-        return new AVectorExpression(
+        return new AMatrixExpression(
             cloneNode(this._l_),
+            cloneNode(this._i_),
             cloneNode(this._e_));
     }
 
     public void apply(Switch sw)
     {
-        ((Analysis) sw).caseAVectorExpression(this);
+        ((Analysis) sw).caseAMatrixExpression(this);
     }
 
     public PExpression getL()
@@ -62,6 +67,31 @@ public final class AVectorExpression extends PExpression
         }
 
         this._l_ = node;
+    }
+
+    public PExpression getI()
+    {
+        return this._i_;
+    }
+
+    public void setI(PExpression node)
+    {
+        if(this._i_ != null)
+        {
+            this._i_.parent(null);
+        }
+
+        if(node != null)
+        {
+            if(node.parent() != null)
+            {
+                node.parent().removeChild(node);
+            }
+
+            node.parent(this);
+        }
+
+        this._i_ = node;
     }
 
     public PExpression getE()
@@ -94,6 +124,7 @@ public final class AVectorExpression extends PExpression
     {
         return ""
             + toString(this._l_)
+            + toString(this._i_)
             + toString(this._e_);
     }
 
@@ -104,6 +135,12 @@ public final class AVectorExpression extends PExpression
         if(this._l_ == child)
         {
             this._l_ = null;
+            return;
+        }
+
+        if(this._i_ == child)
+        {
+            this._i_ = null;
             return;
         }
 
@@ -123,6 +160,12 @@ public final class AVectorExpression extends PExpression
         if(this._l_ == oldChild)
         {
             setL((PExpression) newChild);
+            return;
+        }
+
+        if(this._i_ == oldChild)
+        {
+            setI((PExpression) newChild);
             return;
         }
 
