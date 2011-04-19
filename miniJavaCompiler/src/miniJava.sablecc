@@ -119,8 +119,10 @@ Productions
     statement { -> statement }
         = {nested}  lcurbr statementlist rcurbr
             { -> New statement.many([statementlist.statement]) }
-        | {ifelse}  if lparen expr rparen [i]:statement else [e]:statement
-            { -> New statement.if(expr.expression, i.statement, e.statement) }
+        | {ifelse}  if lparen expr rparen [i]:statement2 else [e]:statement
+            { -> New statement.ifelse(expr.expression, i.statement, e.statement) }
+        | {if}  if lparen expr rparen statement
+            { -> New statement.if(expr.expression, statement) }
         | {while}   while lparen expr rparen statement
             { -> New statement.while(expr.expression, statement) }
         | {print}   print lparen expr rparen semi
@@ -129,7 +131,21 @@ Productions
             { -> New statement.atb(id, expr.expression) }
         | {vassign} id lbrace [i]:expr rbrace be [v]:expr semi
             { -> New statement.vatb(id, i.expression, v.expression) };
-
+            
+    statement2 { -> statement }
+        = {nested}  lcurbr statementlist rcurbr
+            { -> New statement.many([statementlist.statement]) }
+        | {ifelse}  if lparen expr rparen [i]:statement2 else [e]:statement2
+            { -> New statement.ifelse(expr.expression, i.statement, e.statement) }
+        | {while}   while lparen expr rparen statement
+            { -> New statement.while(expr.expression, statement) }
+        | {print}   print lparen expr rparen semi
+            { -> New statement.print(expr.expression) }
+        | {assign}  id be expr semi
+            { -> New statement.atb(id, expr.expression) }
+        | {vassign} id lbrace [i]:expr rbrace be [v]:expr semi
+            { -> New statement.vatb(id, i.expression, v.expression) };
+		            
     type
         = {intt}  intt
 			{ -> New type.intt(intt) }
@@ -239,7 +255,8 @@ Abstract Syntax Tree
         = type id [param]:var* [local]:var* statement* expression;
 
     statement
-        = {if}    expression [i]:statement [e]:statement
+        = {ifelse}    expression [i]:statement [e]:statement
+        | {if}    expression statement
         | {vatb}  id [i]:expression [v]:expression
         | {atb}   id expression
         | {while} expression statement

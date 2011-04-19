@@ -18,6 +18,7 @@ public interface Analysis extends Switch
     void caseANonextNextclass(ANonextNextclass node);
     void caseAVar(AVar node);
     void caseAMethod(AMethod node);
+    void caseAIfelseStatement(AIfelseStatement node);
     void caseAIfStatement(AIfStatement node);
     void caseAVatbStatement(AVatbStatement node);
     void caseAAtbStatement(AAtbStatement node);

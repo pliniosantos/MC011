@@ -99,6 +99,11 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseAIfelseStatement(AIfelseStatement node)
+    {
+        defaultCase(node);
+    }
+
     public void caseAIfStatement(AIfStatement node)
     {
         defaultCase(node);

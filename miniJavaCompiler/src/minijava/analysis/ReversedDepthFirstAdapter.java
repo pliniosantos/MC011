@@ -254,6 +254,35 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         outAMethod(node);
     }
 
+    public void inAIfelseStatement(AIfelseStatement node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAIfelseStatement(AIfelseStatement node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAIfelseStatement(AIfelseStatement node)
+    {
+        inAIfelseStatement(node);
+        if(node.getE() != null)
+        {
+            node.getE().apply(this);
+        }
+        if(node.getI() != null)
+        {
+            node.getI().apply(this);
+        }
+        if(node.getExpression() != null)
+        {
+            node.getExpression().apply(this);
+        }
+        outAIfelseStatement(node);
+    }
+
     public void inAIfStatement(AIfStatement node)
     {
         defaultIn(node);
@@ -268,13 +297,9 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
     public void caseAIfStatement(AIfStatement node)
     {
         inAIfStatement(node);
-        if(node.getE() != null)
+        if(node.getStatement() != null)
         {
-            node.getE().apply(this);
-        }
-        if(node.getI() != null)
-        {
-            node.getI().apply(this);
+            node.getStatement().apply(this);
         }
         if(node.getExpression() != null)
         {
