@@ -53,7 +53,11 @@ Tokens
     times = '*';
     gthan = '>';
     lthan = '<';
+    ge    = '>=';
+    le    = '<=';
     and   = '&&';
+    or    = '||';
+    loeq  = '==';
     neg   = '!';
     be    = '=';
 
@@ -211,14 +215,22 @@ Productions
     bexpr { -> expression }
         = {greater} bexpr gthan iaexpr
             { -> New expression.gthan(bexpr.expression, iaexpr.expression) }
+        | {ge} bexpr ge iaexpr
+            { -> New expression.ge(bexpr.expression, iaexpr.expression) }
         | {less}    bexpr lthan iaexpr
             { -> New expression.lthan(bexpr.expression, iaexpr.expression) }
+        | {le}    bexpr le iaexpr
+            { -> New expression.le(bexpr.expression, iaexpr.expression) }
         | {next}    iaexpr
             { -> iaexpr.expression };
 
     expr { -> expression }
         = {and}  expr and bexpr
             { -> New expression.and(expr.expression, bexpr.expression) }
+        | {or}   expr or bexpr
+            { -> New expression.or(expr.expression, bexpr.expression) }
+        | {logicalequal} expr loeq bexpr
+            { -> New expression.loeq(expr.expression, bexpr.expression) }
         | {next} bexpr
             { -> bexpr.expression };
 
@@ -267,8 +279,12 @@ Abstract Syntax Tree
         | {minus}  [l]:expression [r]:expression
         | {mult}   [l]:expression [r]:expression
         | {and}    [l]:expression [r]:expression
+        | {or}     [l]:expression [r]:expression
         | {gthan}  [l]:expression [r]:expression
+        | {ge}     [l]:expression [r]:expression
         | {lthan}  [l]:expression [r]:expression
+        | {le}     [l]:expression [r]:expression
+        | {loeq}   [l]:expression [r]:expression
         | {vector} [l]:expression [e]:expression
         | {length} expression
         | {not}    expression
