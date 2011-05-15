@@ -77,42 +77,42 @@ Ignored Tokens
 
 Productions
     program { -> program }
-        = mainclass classdecl
-            { -> New program(mainclass, [classdecl.class_decl]) };
+        = main_class classdecl
+            { -> New program(main_class, [classdecl.class_decl]) };
 
-    mainclass { -> mainclass }
+    main_class { -> main_class }
         = tok_class [name]:id [op]:l_brace tok_public tok_static tok_void tok_main l_paren tok_string l_brack r_brack [arg]:id r_paren [os]:l_brace statementlist [cp]:r_brace [cs]:r_brace
-            { -> New mainclass(name, arg, [statementlist.statement]) };
+            { -> New main_class(name, arg, [statementlist.statement]) };
 
     classdecl { -> class_decl* }
-        = {ext} tok_class [cname]:id tok_extends [ename]:id l_brace vardecl methoddecl r_brace classdecl
-            { -> [New class_decl.ext(cname, ename, [vardecl.var], [methoddecl.method]), classdecl.class_decl] }
-        | {nonext} tok_class id l_brace vardecl methoddecl r_brace classdecl
-            { -> [New class_decl.nonext(id, [vardecl.var], [methoddecl.method]), classdecl.class_decl] }
+        = {ext} tok_class [cname]:id tok_extends [ename]:id l_brace vardecl method_decl r_brace classdecl
+            { -> [New class_decl.ext(cname, ename, [vardecl.var_decl], [method_decl.method_decl]), classdecl.class_decl] }
+        | {nonext} tok_class id l_brace vardecl method_decl r_brace classdecl
+            { -> [New class_decl.nonext(id, [vardecl.var_decl], [method_decl.method_decl]), classdecl.class_decl] }
         | {empty}
         	{ -> [] };
   
-    vardecl { -> var* }
+    vardecl { -> var_decl* }
         = {nonempty} vardecl type id semi
-            { -> [vardecl.var, New var(type, id)] }
+            { -> [vardecl.var_decl, New var_decl(type, id)] }
         | {empty}
         	{ -> [] };
 
-    methoddecl { -> method* }
-        = {nonempty} tok_public type id l_paren formallist r_paren l_brace vardecl statementlist tok_return expr semi r_brace methoddecl
-            { -> [New method(type, id, [formallist.formal], [vardecl.var], [statementlist.statement], expr.exp), methoddecl.method] }
+    method_decl { -> method_decl* }
+        = {nonempty} tok_public type id l_paren formallist r_paren l_brace vardecl statementlist tok_return expr semi r_brace method_decl
+            { -> [New method_decl(type, id, [formallist.formal], [vardecl.var_decl], [statementlist.statement], expr.exp), method_decl.method_decl] }
         | {empty}
         	{ -> [] };
 
     formallist { -> formal* }
         = {nonempty} type id formalrest
-            { -> [New formal(New var(type, id), [formalrest.formal])] }
+            { -> [New formal(New var_decl(type, id), [formalrest.formal])] }
         | {empty}
         	{ -> [] };
 
     formalrest { -> formal* }
         = {remainder} comma type id formalrest
-            { -> [New formal(New var(type, id), [formalrest.formal])] }
+            { -> [New formal(New var_decl(type, id), [formalrest.formal])] }
         | {empty}
         	{ -> [] };
     
@@ -169,22 +169,22 @@ Productions
             { -> New exp.true(tok_true) }
         | {false}   tok_false
             { -> New exp.false(tok_false) }
-        | {self}    tok_this
-            { -> New exp.self(tok_this) }
+        | {this}    tok_this
+            { -> New exp.this(tok_this) }
 		| {parexp}  l_paren expr r_paren
         	{ -> expr.exp }
         | {vaccess} noarrayexpr l_brack expr r_brack 
-            { -> New exp.array_lockup(noarrayexpr.exp, expr.exp) }
+            { -> New exp.array_lookup(noarrayexpr.exp, expr.exp) }
         | {length}  primaryexpr dot tok_length
             { -> New exp.array_length(primaryexpr.exp) }
         | {maccess} primaryexpr dot id l_paren exprlist r_paren
             { -> New exp.call(primaryexpr.exp, id, [exprlist.exp]) }
         | {newc} tok_new id l_paren r_paren
-            { -> New exp.newobj(id) };
+            { -> New exp.new_object(id) };
 
 	primaryexpr { -> exp }
 		= {newarr} tok_new tok_int l_brack expr r_brack matrixaccess
-            { -> New exp.newvec(expr.exp, [matrixaccess.exp]) }
+            { -> New exp.new_array(expr.exp, [matrixaccess.exp]) }
 		| {next}   noarrayexpr
 			{ -> noarrayexpr.exp };
 			
@@ -201,8 +201,8 @@ Productions
     		{ -> primaryexpr.exp };
     		
     ipexpr { -> exp }
-        = {mult} ipexpr times unaryexpr
-            { -> New exp.mult(ipexpr.exp, unaryexpr.exp) }
+        = {times} ipexpr times unaryexpr
+            { -> New exp.times(ipexpr.exp, unaryexpr.exp) }
         | {next} unaryexpr
             { -> unaryexpr.exp };
 
@@ -253,23 +253,23 @@ Productions
 
 Abstract Syntax Tree
     program
-        = mainclass class_decl*;
+        = main_class class_decl*;
 
-    mainclass
+    main_class
         = [cn]:id [an]:id statement*;
 
     class_decl
-        = {ext}    [name]:id [ext]:id var* method*
-        | {nonext} id var* method*;
+        = {ext}    [name]:id [ext]:id var_decl* method_decl*
+        | {nonext} id var_decl* method_decl*;
 
     formal
-       = var formal*;
+       = var_decl formal*;
 
-    var
+    var_decl
        = type id;
 
-    method
-        = type id formal* var* statement* exp;
+    method_decl
+        = type id formal* var_decl* statement* exp;
 
     statement
         = {if}    exp [i]:statement [e]:statement*
@@ -283,7 +283,7 @@ Abstract Syntax Tree
         = {call}  [obj]:exp id [par]:exp*
         | {plus}   [l]:exp [r]:exp
         | {minus}  [l]:exp [r]:exp
-        | {mult}   [l]:exp [r]:exp
+        | {times}   [l]:exp [r]:exp
         | {and}    [l]:exp [r]:exp
         | {or}     [l]:exp [r]:exp
         | {gthan}  [l]:exp [r]:exp
@@ -292,19 +292,20 @@ Abstract Syntax Tree
         | {less_than}     [l]:exp [r]:exp
         | {equal}   [l]:exp [r]:exp
         | {noteq}  [l]:exp [r]:exp
-        | {array_lockup} [l]:exp [e]:exp
+        | {array_lookup} [l]:exp [e]:exp
         | {array_length} exp
         | {not}    exp
-        | {newvec} [l]:exp [i]:exp*
+        | {new_array} [l]:exp [i]:exp*
         | {identifier}    id
-        | {newobj} id
+        | {new_object} id
         | {integer_literal} number
         | {true}  tok_true
         | {false} tok_false
-        | {self}   tok_this;
+        | {this}   tok_this;
     
     type
         = {int}  tok_int
         | {array}  intv
         | {boolean}  tok_boolean
-        | {class} id;
+        | {class} id
+        | {object} id;
