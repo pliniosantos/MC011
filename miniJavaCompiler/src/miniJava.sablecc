@@ -78,17 +78,17 @@ Ignored Tokens
 Productions
     program { -> program }
         = mainclass classdecl
-            { -> New program(mainclass, [classdecl.nextclass]) };
+            { -> New program(mainclass, [classdecl.class_decl]) };
 
     mainclass { -> mainclass }
         = tok_class [name]:id [op]:l_brace tok_public tok_static tok_void tok_main l_paren tok_string l_brack r_brack [arg]:id r_paren [os]:l_brace statementlist [cp]:r_brace [cs]:r_brace
             { -> New mainclass(name, arg, [statementlist.statement]) };
 
-    classdecl { -> nextclass* }
+    classdecl { -> class_decl* }
         = {ext} tok_class [cname]:id tok_extends [ename]:id l_brace vardecl methoddecl r_brace classdecl
-            { -> [New nextclass.ext(cname, ename, [vardecl.var], [methoddecl.method]), classdecl.nextclass] }
+            { -> [New class_decl.ext(cname, ename, [vardecl.var], [methoddecl.method]), classdecl.class_decl] }
         | {nonext} tok_class id l_brace vardecl methoddecl r_brace classdecl
-            { -> [New nextclass.nonext(id, [vardecl.var], [methoddecl.method]), classdecl.nextclass] }
+            { -> [New class_decl.nonext(id, [vardecl.var], [methoddecl.method]), classdecl.class_decl] }
         | {empty}
         	{ -> [] };
   
@@ -138,7 +138,7 @@ Productions
             
     statement2 { -> statement }
         = {nested}  l_brace statementlist r_brace
-            { -> New statement.many([statementlist.statement]) }
+            { -> New statement.block([statementlist.statement]) }
         | {ifelse}  tok_if l_paren expr r_paren [i]:statement2 tok_else [e]:statement2
             { -> New statement.if(expr.exp, i.statement, [e.statement]) }
         | {while}   tok_while l_paren expr r_paren statement2
@@ -146,15 +146,15 @@ Productions
         | {print}   tok_print l_paren expr r_paren semi
             { -> New statement.print(expr.exp) }
         | {assign}  id be expr semi
-            { -> New statement.atb(id, expr.exp) }
+            { -> New statement.assign(id, expr.exp) }
         | {vassign} id l_brack [i]:expr r_brack be [v]:expr semi
-            { -> New statement.vatb(id, i.exp, v.exp) };
+            { -> New statement.array_assign(id, i.exp, v.exp) };
 		            
     type
         = {intt}  tok_int
 			{ -> New type.int(tok_int) }
         | {intv}  intv
-			{ -> New type.intv(intv) }
+			{ -> New type.array(intv) }
         | {bool}  tok_boolean
 			{ -> New type.boolean(tok_boolean) }
         | {class} id
@@ -174,11 +174,11 @@ Productions
 		| {parexp}  l_paren expr r_paren
         	{ -> expr.exp }
         | {vaccess} noarrayexpr l_brack expr r_brack 
-            { -> New exp.vector(noarrayexpr.exp, expr.exp) }
+            { -> New exp.array_lockup(noarrayexpr.exp, expr.exp) }
         | {length}  primaryexpr dot tok_length
-            { -> New exp.length(primaryexpr.exp) }
+            { -> New exp.array_length(primaryexpr.exp) }
         | {maccess} primaryexpr dot id l_paren exprlist r_paren
-            { -> New exp.mcall(primaryexpr.exp, id, [exprlist.exp]) }
+            { -> New exp.call(primaryexpr.exp, id, [exprlist.exp]) }
         | {newc} tok_new id l_paren r_paren
             { -> New exp.newobj(id) };
 
@@ -232,7 +232,7 @@ Productions
         | {or}   expr or bexpr
             { -> New exp.or(expr.exp, bexpr.exp) }
         | {logicalequal} expr eq bexpr
-            { -> New exp.loeq(expr.exp, bexpr.exp) }
+            { -> New exp.equal(expr.exp, bexpr.exp) }
         | {noteq} expr neq bexpr
             { -> New exp.noteq(expr.exp, bexpr.exp) }
         | {next} bexpr
@@ -253,12 +253,12 @@ Productions
 
 Abstract Syntax Tree
     program
-        = mainclass nextclass*;
+        = mainclass class_decl*;
 
     mainclass
         = [cn]:id [an]:id statement*;
 
-    nextclass
+    class_decl
         = {ext}    [name]:id [ext]:id var* method*
         | {nonext} id var* method*;
 
@@ -270,14 +270,14 @@ Abstract Syntax Tree
 
     statement
         = {if}    exp [i]:statement [e]:statement*
-        | {vatb}  id [i]:exp [v]:exp
-        | {atb}   id exp
+        | {array_assign}  id [i]:exp [v]:exp
+        | {assign}   id exp
         | {while} exp statement
         | {print} exp
-        | {many}  statement*;
+        | {block}  statement*;
 
     exp
-        = {mcall}  [obj]:exp id [par]:exp*
+        = {call}  [obj]:exp id [par]:exp*
         | {plus}   [l]:exp [r]:exp
         | {minus}  [l]:exp [r]:exp
         | {mult}   [l]:exp [r]:exp
@@ -287,10 +287,10 @@ Abstract Syntax Tree
         | {ge}     [l]:exp [r]:exp
         | {lthan}  [l]:exp [r]:exp
         | {le}     [l]:exp [r]:exp
-        | {loeq}   [l]:exp [r]:exp
+        | {equal}   [l]:exp [r]:exp
         | {noteq}  [l]:exp [r]:exp
-        | {vector} [l]:exp [e]:exp
-        | {length} exp
+        | {array_lockup} [l]:exp [e]:exp
+        | {array_length} exp
         | {not}    exp
         | {newvec} [l]:exp [i]:exp*
         | {var}    id
@@ -302,6 +302,6 @@ Abstract Syntax Tree
     
     type
         = {int}  tok_int
-        | {intv}  intv
+        | {array}  intv
         | {boolean}  tok_boolean
         | {class} id;
