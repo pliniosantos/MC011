@@ -8,42 +8,43 @@ Helpers
 	character     		= [['a' .. 'z'] + ['A' .. 'Z']];
 	anychar      		= [0x0 .. 0xfff];
 	line_terminator 	= cr lf | cr | lf;
-	white_space     	= tab | ' ';
+	white_space_aux    	= tab | ' ';
 	without_star    	= [anychar - '*'];
 	without_star_slash  = [without_star - '/'];
 	linecomment  		= '//' [anychar - [cr + lf]]* line_terminator?;
-    blockcomment 		= '/*' without_star* '*'+ (without_star_slash without_star* '*'+)* '/';
+    blockcomment_aux	= '/*' without_star* '*'+ (without_star_slash without_star* '*'+)* '/';
 
 Tokens
 	// Identificadores
-    intt    = 'int';
-    intv    = 'int' white_space* '[' white_space* ']';
-    bool    = 'boolean';
-    classtk = 'class';
-    public  = 'public';
-    extends = 'extends';
-    if      = 'if';
-    while   = 'while';
-    else    = 'else';
-    return  = 'return';
-    true    = 'true';
-    false   = 'false';
-    this    = 'this';
-    new     = 'new';
-    length  = 'length';
-    string  = 'String';
-    print   = 'System.out.println';
-    static  = 'static';
-    void    = 'void';
-    main    = 'main';
+	intv    = 'int' white_space_aux* '[' white_space_aux* ']';
+    tok_int     = 'int';
+    tok_boolean = 'boolean';
+    tok_class = 'class';
+    tok_public  = 'public';
+    tok_extends = 'extends';
+    tok_if      = 'if';
+    tok_while   = 'while';
+    tok_else    = 'else';
+    tok_return  = 'return';
+    tok_true    = 'true';
+    tok_false   = 'false';
+    tok_this    = 'this';
+    tok_new     = 'new';
+    tok_length  = 'length';
+    tok_string  = 'String';
+    tok_print   = 'System.out.println';
+    tok_static  = 'static';
+    tok_void    = 'void';
+    tok_main    = 'main';
+    tok_null    = 'null';
 
 	// Simbolos
-    lbrace = '[';
-    rbrace = ']';
-    lparen = '(';
-    rparen = ')';
-    lcurbr = '{';
-    rcurbr = '}';
+    l_brack = '[';
+    r_brack = ']';
+    l_paren = '(';
+    r_paren = ')';
+    l_brace = '{';
+    r_brace = '}';
     dot    = '.';
     comma  = ',';
     semi   = ';';
@@ -51,15 +52,15 @@ Tokens
     plus  = '+';
     minus = '-';
     times = '*';
-    gthan = '>';
-    lthan = '<';
+    gt    = '>';
+    lt    = '<';
     ge    = '>=';
     le    = '<=';
     and   = '&&';
     or    = '||';
-    loeq  = '==';
-    noteq = '!=';
-    neg   = '!';
+    eq    = '==';
+    neq   = '!=';
+    not   = '!';
     be    = '=';
 
 	// Outros
@@ -67,11 +68,11 @@ Tokens
     number = '0' | ([decimal - '0'] decimal*);
 
 	// Ignorados
-    blank   = (white_space | line_terminator)+;
-    comment = linecomment | blockcomment;
+    white_space   = (white_space_aux | line_terminator)+;
+    block_comment = linecomment | blockcomment_aux;
    
 Ignored Tokens
-	blank, comment;
+	white_space, block_comment;
 
 
 Productions
@@ -80,13 +81,13 @@ Productions
             { -> New program(mainclass, [classdecl.nextclass]) };
 
     mainclass { -> mainclass }
-        = classtk [name]:id [op]:lcurbr public static void main lparen string lbrace rbrace [arg]:id rparen [os]:lcurbr statementlist [cp]:rcurbr [cs]:rcurbr
+        = tok_class [name]:id [op]:l_brace tok_public tok_static tok_void tok_main l_paren tok_string l_brack r_brack [arg]:id r_paren [os]:l_brace statementlist [cp]:r_brace [cs]:r_brace
             { -> New mainclass(name, arg, [statementlist.statement]) };
 
     classdecl { -> nextclass* }
-        = {ext} classtk [cname]:id extends [ename]:id lcurbr vardecl methoddecl rcurbr classdecl
+        = {ext} tok_class [cname]:id tok_extends [ename]:id l_brace vardecl methoddecl r_brace classdecl
             { -> [New nextclass.ext(cname, ename, [vardecl.var], [methoddecl.method]), classdecl.nextclass] }
-        | {nonext} classtk id lcurbr vardecl methoddecl rcurbr classdecl
+        | {nonext} tok_class id l_brace vardecl methoddecl r_brace classdecl
             { -> [New nextclass.nonext(id, [vardecl.var], [methoddecl.method]), classdecl.nextclass] }
         | {empty}
         	{ -> [] };
@@ -98,7 +99,7 @@ Productions
         	{ -> [] };
 
     methoddecl { -> method* }
-        = {nonempty} public type id lparen formallist rparen lcurbr vardecl statementlist return expr semi rcurbr methoddecl
+        = {nonempty} tok_public type id l_paren formallist r_paren l_brace vardecl statementlist tok_return expr semi r_brace methoddecl
             { -> [New method(type, id, [formallist.var], [vardecl.var], [statementlist.statement], expr.expression), methoddecl.method] }
         | {empty}
         	{ -> [] };
@@ -128,34 +129,34 @@ Productions
 			{ -> statement2.statement };
 
     statement1 { -> statement }
-        = {if}  if lparen expr rparen statement
+        = {if}  tok_if l_paren expr r_paren statement
             { -> New statement.if(expr.expression, statement) }
-        | {ifelse}  if lparen expr rparen [i]:statement2 else [e]:statement1
+        | {ifelse}  tok_if l_paren expr r_paren [i]:statement2 tok_else [e]:statement1
             { -> New statement.ifelse(expr.expression, i.statement, e.statement) }
-        | {while}   while lparen expr rparen statement1
+        | {while}   tok_while l_paren expr r_paren statement1
             { -> New statement.while(expr.expression, statement1.statement) };
             
     statement2 { -> statement }
-        = {nested}  lcurbr statementlist rcurbr
+        = {nested}  l_brace statementlist r_brace
             { -> New statement.many([statementlist.statement]) }
-        | {ifelse}  if lparen expr rparen [i]:statement2 else [e]:statement2
+        | {ifelse}  tok_if l_paren expr r_paren [i]:statement2 tok_else [e]:statement2
             { -> New statement.ifelse(expr.expression, i.statement, e.statement) }
-        | {while}   while lparen expr rparen statement2
+        | {while}   tok_while l_paren expr r_paren statement2
             { -> New statement.while(expr.expression, statement2.statement) }
-        | {print}   print lparen expr rparen semi
+        | {print}   tok_print l_paren expr r_paren semi
             { -> New statement.print(expr.expression) }
         | {assign}  id be expr semi
             { -> New statement.atb(id, expr.expression) }
-        | {vassign} id lbrace [i]:expr rbrace be [v]:expr semi
+        | {vassign} id l_brack [i]:expr r_brack be [v]:expr semi
             { -> New statement.vatb(id, i.expression, v.expression) };
 		            
     type
-        = {intt}  intt
-			{ -> New type.intt(intt) }
+        = {intt}  tok_int
+			{ -> New type.intt(tok_int) }
         | {intv}  intv
 			{ -> New type.intv(intv) }
-        | {bool}  bool
-			{ -> New type.bool(bool) }
+        | {bool}  tok_boolean
+			{ -> New type.bool(tok_boolean) }
         | {class} id
 			{ -> New type.class(id) };
 
@@ -164,37 +165,37 @@ Productions
         	{ -> New expression.var(id) }
 		| {literal} number
             { -> New expression.number(number) }
-        | {true}    true
-            { -> New expression.btrue(true) }
-        | {false}   false
-            { -> New expression.bfalse(false) }
-        | {self}    this
-            { -> New expression.self(this) }
-		| {parexp}  lparen expr rparen
+        | {true}    tok_true
+            { -> New expression.btrue(tok_true) }
+        | {false}   tok_false
+            { -> New expression.bfalse(tok_false) }
+        | {self}    tok_this
+            { -> New expression.self(tok_this) }
+		| {parexp}  l_paren expr r_paren
         	{ -> expr.expression }
-        | {vaccess} noarrayexpr lbrace expr rbrace 
+        | {vaccess} noarrayexpr l_brack expr r_brack 
             { -> New expression.vector(noarrayexpr.expression, expr.expression) }
-        | {length}  primaryexpr dot length
+        | {length}  primaryexpr dot tok_length
             { -> New expression.length(primaryexpr.expression) }
-        | {maccess} primaryexpr dot id lparen exprlist rparen
+        | {maccess} primaryexpr dot id l_paren exprlist r_paren
             { -> New expression.mcall(primaryexpr.expression, id, [exprlist.expression]) }
-        | {newc} new id lparen rparen
+        | {newc} tok_new id l_paren r_paren
             { -> New expression.newobj(id) };
 
 	primaryexpr { -> expression }
-		= {newarr} new intt lbrace expr rbrace matrixaccess
+		= {newarr} tok_new tok_int l_brack expr r_brack matrixaccess
             { -> New expression.newvec(expr.expression, [matrixaccess.expression]) }
 		| {next}   noarrayexpr
 			{ -> noarrayexpr.expression };
 			
 	matrixaccess { -> expression* }
-		= {nonempty} lbrace expr rbrace matrixaccess
+		= {nonempty} l_brack expr r_brack matrixaccess
 			{ -> [expr.expression, matrixaccess.expression] }
 		| {empty}
         	{ -> [] }; 
         	
 	unaryexpr { -> expression }
-    	= {not}  neg unaryexpr
+    	= {not}  not unaryexpr
     		{ -> New expression.not(unaryexpr.expression) }
     	| {next} primaryexpr
     		{ -> primaryexpr.expression };
@@ -214,11 +215,11 @@ Productions
             { -> ipexpr.expression };
 
     bexpr { -> expression }
-        = {greater} bexpr gthan iaexpr
+        = {greater} bexpr gt iaexpr
             { -> New expression.gthan(bexpr.expression, iaexpr.expression) }
         | {ge} bexpr ge iaexpr
             { -> New expression.ge(bexpr.expression, iaexpr.expression) }
-        | {less}    bexpr lthan iaexpr
+        | {less}    bexpr lt iaexpr
             { -> New expression.lthan(bexpr.expression, iaexpr.expression) }
         | {le}    bexpr le iaexpr
             { -> New expression.le(bexpr.expression, iaexpr.expression) }
@@ -230,9 +231,9 @@ Productions
             { -> New expression.and(expr.expression, bexpr.expression) }
         | {or}   expr or bexpr
             { -> New expression.or(expr.expression, bexpr.expression) }
-        | {logicalequal} expr loeq bexpr
+        | {logicalequal} expr eq bexpr
             { -> New expression.loeq(expr.expression, bexpr.expression) }
-        | {noteq} expr noteq bexpr
+        | {noteq} expr neq bexpr
             { -> New expression.noteq(expr.expression, bexpr.expression) }
         | {next} bexpr
             { -> bexpr.expression };
@@ -296,12 +297,12 @@ Abstract Syntax Tree
         | {var}    id
         | {newobj} id
         | {number} number
-        | {btrue}  true
-        | {bfalse} false
-        | {self}   this;
+        | {btrue}  tok_true
+        | {bfalse} tok_false
+        | {self}   tok_this;
     
     type
-        = {intt}  intt
+        = {intt}  tok_int
         | {intv}  intv
-        | {bool}  bool
+        | {bool}  tok_boolean
         | {class} id;

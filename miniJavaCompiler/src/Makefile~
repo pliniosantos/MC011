@@ -1,0 +1,10 @@
+TARGET = main/Main.class
+
+SOURCE = 
+
+$(TARGET): $(SOURCE)
+	java -jar sablecc.jar miniJava.sablecc
+	javac -g minijava/main/Main.java
+
+clean: 
+	rm -rf minijava/analysis/*.*
