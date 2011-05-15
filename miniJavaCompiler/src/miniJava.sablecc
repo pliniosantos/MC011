@@ -100,19 +100,19 @@ Productions
 
     methoddecl { -> method* }
         = {nonempty} tok_public type id l_paren formallist r_paren l_brace vardecl statementlist tok_return expr semi r_brace methoddecl
-            { -> [New method(type, id, [formallist.var], [vardecl.var], [statementlist.statement], expr.exp), methoddecl.method] }
+            { -> [New method(type, id, [formallist.formal], [vardecl.var], [statementlist.statement], expr.exp), methoddecl.method] }
         | {empty}
         	{ -> [] };
 
-    formallist { -> var* }
+    formallist { -> formal* }
         = {nonempty} type id formalrest
-            { -> [New var(type, id), formalrest.var] }
+            { -> [New formal(New var(type, id), [formalrest.formal])] }
         | {empty}
         	{ -> [] };
 
-    formalrest { -> var* }
+    formalrest { -> formal* }
         = {remainder} comma type id formalrest
-            { -> [New var(type, id), formalrest.var] }
+            { -> [New formal(New var(type, id), [formalrest.formal])] }
         | {empty}
         	{ -> [] };
     
@@ -162,9 +162,9 @@ Productions
 
 	noarrayexpr { -> exp }
         = {name}    id
-        	{ -> New exp.var(id) }
+        	{ -> New exp.identifier(id) }
 		| {literal} number
-            { -> New exp.number(number) }
+            { -> New exp.integer_literal(number) }
         | {true}    tok_true
             { -> New exp.true(tok_true) }
         | {false}   tok_false
@@ -222,7 +222,7 @@ Productions
         | {less}    bexpr lt iaexpr
             { -> New exp.lthan(bexpr.exp, iaexpr.exp) }
         | {le}    bexpr le iaexpr
-            { -> New exp.le(bexpr.exp, iaexpr.exp) }
+            { -> New exp.less_than(bexpr.exp, iaexpr.exp) }
         | {next}    iaexpr
             { -> iaexpr.exp };
 
@@ -262,11 +262,14 @@ Abstract Syntax Tree
         = {ext}    [name]:id [ext]:id var* method*
         | {nonext} id var* method*;
 
+    formal
+       = var formal*;
+
     var
        = type id;
 
     method
-        = type id [param]:var* [local]:var* statement* exp;
+        = type id formal* var* statement* exp;
 
     statement
         = {if}    exp [i]:statement [e]:statement*
@@ -286,16 +289,16 @@ Abstract Syntax Tree
         | {gthan}  [l]:exp [r]:exp
         | {ge}     [l]:exp [r]:exp
         | {lthan}  [l]:exp [r]:exp
-        | {le}     [l]:exp [r]:exp
+        | {less_than}     [l]:exp [r]:exp
         | {equal}   [l]:exp [r]:exp
         | {noteq}  [l]:exp [r]:exp
         | {array_lockup} [l]:exp [e]:exp
         | {array_length} exp
         | {not}    exp
         | {newvec} [l]:exp [i]:exp*
-        | {var}    id
+        | {identifier}    id
         | {newobj} id
-        | {number} number
+        | {integer_literal} number
         | {true}  tok_true
         | {false} tok_false
         | {self}   tok_this;
