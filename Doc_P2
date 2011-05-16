@@ -1,0 +1,17 @@
+M011 - Laboratório de Compiladores
+
+Grupo G15
+Plinio Sandes dos Santos
+Rafael Suguro Rodrigues Leite
+
+Nesta parte do projeto implementamos a parte de análise semântica, que se encontra na pasta semant, utilizando visitors.
+Foram implementadas as 2 passadas assim como a verificação de heança ciclica.
+Também foi adaptada a gramática gerada na parte 1, para que fosse possível utilizar este pacote.
+
+
+Para execuçao do código:
+Dentro da pasta src
+Execute make clean para limpar os .class e a pasta minijava
+Execute make para compilar o projeto
+Execute make run para executar os testes e gerar as saídas na pasta out
+Execute java minijava/main/Main [path do arquivo de teste] (por exemplo ../../testes/small/2/11) para rodar um arquivo de teste de sua preferencia

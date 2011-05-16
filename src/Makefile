@@ -103,4 +103,3 @@ run:
 	java main.Main ../testes/LinkedList.txt > out/LinkedList.out
 	java main.Main ../testes/QuickSort.txt > out/QuickSort.out
 	java main.Main ../testes/TreeVisitor.txt > out/TreeVisitor.out
-

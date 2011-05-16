@@ -9,7 +9,7 @@ Repositório para gerenciar o conte-
 údo do grupo G15 de MC011 1s2011.
 
 Todo o projeto será desenvolvido
-e puclicado neste repositório.
+e publiclicado neste repositório.
 
 /**************************************
 *                                     *
@@ -26,6 +26,7 @@ rios
 
 Para execuçao do código:
 Dentro da pasta src
-java -jar sablecc.jar miniJava.sablecc
-javac minijava/main/Main.java
-java minijava/main/Main [path do arquivo de teste] (por exemplo ../../testes/small/2/11)
+Execute make clean para limpar os .class e a pasta minijava
+Execute make para compilar o projeto
+Execute make run para executar os testes e gerar as saídas na pasta out
+Execute java minijava/main/Main [path do arquivo de teste] (por exemplo ../../testes/small/2/11) para rodar um arquivo de teste de sua preferencia
