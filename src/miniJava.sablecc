@@ -1,0 +1,308 @@
+Package minijava;
+
+Helpers
+	tab          		= 9;
+	lf           		= 10;
+	cr           		= 13;
+	decimal        		= ['0' .. '9'];
+	character     		= [['a' .. 'z'] + ['A' .. 'Z']];
+	anychar      		= [0x0 .. 0xfff];
+	line_terminator 	= cr lf | cr | lf;
+	white_space_aux    	= tab | ' ';
+	without_star    	= [anychar - '*'];
+	without_star_slash  = [without_star - '/'];
+	linecomment  		= '//' [anychar - [cr + lf]]* line_terminator?;
+    blockcomment_aux	= '/*' without_star* '*'+ (without_star_slash without_star* '*'+)* '/';
+
+Tokens
+	// Identificadores
+    tok_int     = 'int';
+    tok_boolean = 'boolean';
+    tok_class = 'class';
+    tok_public  = 'public';
+    tok_extends = 'extends';
+    tok_if      = 'if';
+    tok_while   = 'while';
+    tok_else    = 'else';
+    tok_return  = 'return';
+    tok_true    = 'true';
+    tok_false   = 'false';
+    tok_this    = 'this';
+    tok_new     = 'new';
+    tok_length  = 'length';
+    tok_string  = 'String';
+    tok_print   = 'System.out.println';
+    tok_static  = 'static';
+    tok_void    = 'void';
+    tok_main    = 'main';
+    tok_null    = 'null';
+
+	// Simbolos
+    l_brack = '[';
+    r_brack = ']';
+    l_paren = '(';
+    r_paren = ')';
+    l_brace = '{';
+    r_brace = '}';
+    dot    = '.';
+    comma  = ',';
+    semi   = ';';
+
+    plus  = '+';
+    minus = '-';
+    times = '*';
+    gt    = '>';
+    lt    = '<';
+    ge    = '>=';
+    le    = '<=';
+    and   = '&&';
+    or    = '||';
+    eq    = '==';
+    neq   = '!=';
+    not   = '!';
+    be    = '=';
+
+	// Outros
+    id     = character (character | decimal | '_')*;
+    number = '0' | ([decimal - '0'] decimal*);
+
+	// Ignorados
+    white_space   = (white_space_aux | line_terminator)+;
+    block_comment = linecomment | blockcomment_aux;
+   
+Ignored Tokens
+	white_space, block_comment;
+
+
+Productions
+    program { -> program }
+        = main_class [classes]:class_decl
+            { -> New program(main_class.main_class, [classes.class_decl]) };
+
+    main_class { -> main_class }
+        = tok_class [name]:id [op]:l_brace tok_public tok_static tok_void tok_main l_paren tok_string l_brack r_brack [main_args]:id r_paren [os]:l_brace statement [cp]:r_brace [cs]:r_brace
+            { -> New main_class(name, main_args, statement.statement) };
+
+    class_decl { -> class_decl* }
+        = {ext} tok_class [name]:id tok_extends [super]:id l_brace [attributes]:var_decl [methods]:method_decl r_brace class_decl
+            { -> [New class_decl(name, super, [attributes.var_decl], [methods.method_decl]), class_decl.class_decl] }
+        | {nonext} tok_class [name]:id l_brace [attributes]:var_decl [methods]:method_decl r_brace class_decl
+            { -> [New class_decl(name, Null, [attributes.var_decl], [methods.method_decl]), class_decl.class_decl] }
+        | {empty}
+        	{ -> [] };
+  
+    var_decl { -> var_decl* }
+        = {nonempty} var_decl type [name]:id semi
+            { -> [var_decl.var_decl, New var_decl(type, name)] }
+        | {empty}
+        	{ -> [] };
+
+    method_decl { -> method_decl* }
+        = {nonempty} tok_public [return_type]:type [name]:id l_paren [formals]:formallist r_paren l_brace [locals]:var_decl [body]:statementlist tok_return [return_exp]:expr semi r_brace method_decl
+            { -> [New method_decl(return_type, name, [formals.formal], [locals.var_decl], [body.statement], return_exp.exp), method_decl.method_decl] }
+        | {empty}
+        	{ -> [] };
+
+    formallist { -> formal* }
+        = {nonempty} type [name]:id formalrest 
+            {-> [New formal(type, name), formalrest.formal]}
+        | {empty}
+        	{ -> [] };
+
+    formalrest { -> formal* }
+        = {remainder} comma type [name]:id formalrest
+            {-> [New formal(type, name), formalrest.formal]}
+        | {empty}
+        	{ -> [] };
+    
+    statementlist { -> statement* }
+    	= {nonempty} statement statementlist
+    		{ -> [statement, statementlist.statement] }
+    	| {empty}
+    		{ -> [] };
+
+    statement { -> statement }
+		= {open} statement1
+			{ -> statement1.statement }
+		| {closed} statement2
+			{ -> statement2.statement };
+
+    statement1 { -> statement }
+        = {if}  [token]:tok_if l_paren [condition]:expr r_paren [then_clause]:statement
+            { -> New statement.if(token, condition.exp, then_clause.statement, Null) }
+        | {ifelse}  [token]:tok_if l_paren [condition]:expr r_paren [then_clause]:statement2 tok_else [else_clause]:statement1
+            { -> New statement.if(token, condition.exp, then_clause.statement, else_clause.statement) }
+        | {while}   [token]:tok_while l_paren [condition]:expr r_paren [body]:statement1
+            { -> New statement.while(token, condition.exp, body.statement) };
+            
+    statement2 { -> statement }
+        = {nested}  l_brace statementlist r_brace
+            { -> New statement.block(l_brace, [statementlist.statement]) }
+        | {ifelse}  [token]:tok_if l_paren [condition]:expr r_paren [then_clause]:statement2 tok_else [else_clause]:statement2
+            { -> New statement.if(token, condition.exp, then_clause.statement, else_clause.statement) }
+        | {while}   [token]:tok_while l_paren [condition]:expr r_paren [body]:statement2
+            { -> New statement.while(token, condition.exp, body.statement) }
+        | {print}   [token]:tok_print l_paren expr r_paren semi
+            { -> New statement.print(token, expr.exp) }
+        | {assign}  [target]:id be [value]:expr semi
+            { -> New statement.assign(target, value.exp) }
+        | {vassign} id l_brack [index]:expr r_brack be [value]:expr semi
+            { -> New statement.array_assign(id, index.exp, value.exp) };
+		            
+    type
+        = {intt}  [token]:tok_int
+			{ -> New type.int(token) }
+        | {intv}  [token]:tok_int l_brack r_brack
+			{ -> New type.array(token) }
+        | {bool}  [token]:tok_boolean
+			{ -> New type.boolean(token) }
+        | {object} [name]:id
+			{ -> New type.object(name) };
+
+	noarrayexpr { -> exp }
+        = {name}    [name]:id
+        	{ -> New exp.identifier(name) }
+		| {literal} [value]:number
+            { -> New exp.integer_literal(value) }
+        | {true}    [token]:tok_true
+            { -> New exp.true(token) }
+        | {false}   [token]:tok_false
+            { -> New exp.false(token) }
+        | {this}    [token]:tok_this
+            { -> New exp.this(token) }
+		| {parexp}  l_paren expr r_paren
+        	{ -> expr.exp }
+        | {vaccess} noarrayexpr l_brack expr r_brack 
+            { -> New exp.array_lookup(noarrayexpr.exp, l_brack, expr.exp) }
+        | {length}  primaryexpr dot [token]:tok_length
+            { -> New exp.array_length(primaryexpr.exp, token) }
+        | {maccess} [object]:primaryexpr dot [method]:id l_paren [actuals]:exprlist r_paren
+            { -> New exp.call(object.exp, method, [actuals.exp]) }
+        | {newc} tok_new [name]:id l_paren r_paren
+            { -> New exp.new_object(name) };
+
+	primaryexpr { -> exp }
+		= {newarr} [token]:tok_new tok_int l_brack expr r_brack matrixaccess
+            { -> New exp.new_array(token, expr.exp, [matrixaccess.exp]) }
+		| {next}   noarrayexpr
+			{ -> noarrayexpr.exp };
+			
+	matrixaccess { -> exp* }
+		= {nonempty} l_brack expr r_brack matrixaccess
+			{ -> [expr.exp, matrixaccess.exp] }
+		| {empty}
+        	{ -> [] }; 
+        	
+	unaryexpr { -> exp }
+    	= {not}  [token]:not unaryexpr
+    		{ -> New exp.not(token,unaryexpr.exp) }
+    	| {next} primaryexpr
+    		{ -> primaryexpr.exp };
+    		
+    ipexpr { -> exp }
+        = {times} ipexpr [token]:times unaryexpr
+            { -> New exp.times(ipexpr.exp, token, unaryexpr.exp) }
+        | {next} unaryexpr
+            { -> unaryexpr.exp };
+
+    iaexpr { -> exp }
+        = {plus}  iaexpr [token]:plus ipexpr
+            { -> New exp.plus(iaexpr.exp, token, ipexpr.exp) }
+        | {minus} iaexpr [token]:minus ipexpr
+            { -> New exp.minus(iaexpr.exp, token, ipexpr.exp) }
+        | {next}  ipexpr
+            { -> ipexpr.exp };
+
+    bexpr { -> exp }
+        = {greater} bexpr gt iaexpr
+            { -> New exp.gthan(bexpr.exp, iaexpr.exp) }
+        | {ge} bexpr ge iaexpr
+            { -> New exp.ge(bexpr.exp, iaexpr.exp) }
+        | {less}    bexpr [token]:lt iaexpr
+            { -> New exp.less_than(bexpr.exp, token, iaexpr.exp) }
+        | {le}    bexpr le iaexpr
+            { -> New exp.lthan(bexpr.exp, iaexpr.exp) }
+        | {next}    iaexpr
+            { -> iaexpr.exp };
+
+    expr { -> exp }
+        = {and}  expr [token]:and bexpr
+            { -> New exp.and(expr.exp, token, bexpr.exp) }
+        | {or}   expr or bexpr
+            { -> New exp.or(expr.exp, bexpr.exp) }
+        | {logicalequal} expr [token]:eq bexpr
+            { -> New exp.equal(expr.exp, token, bexpr.exp) }
+        | {noteq} expr neq bexpr
+            { -> New exp.noteq(expr.exp, bexpr.exp) }
+        | {next} bexpr
+            { -> bexpr.exp };
+
+    exprlist { -> exp* }
+        = {nonempty} expr exprrest
+            { -> [expr.exp, exprrest.exp] }
+        | {empty}
+        	{ -> [] };
+
+    exprrest { -> exp* }
+        = {remainder} comma expr exprrest
+            { -> [expr.exp, exprrest.exp] }
+        | {empty}
+        	{ -> [] };
+
+
+Abstract Syntax Tree
+    program
+        = main_class [classes]:class_decl*;
+
+    main_class
+        = [name]:id [main_args]:id statement;
+
+    class_decl
+        = [name]:id [super]:id? [attributes]:var_decl* [methods]:method_decl*;
+
+    formal
+       = type [name]:id;
+
+    var_decl
+       = type [name]:id;
+
+    method_decl
+        = [return_type]:type [name]:id [formals]:formal* [locals]:var_decl* [body]:statement* [return_exp]:exp;
+
+    statement
+        = {if}  [token]:tok_if  [condition]:exp [then_clause]:statement [else_clause]:statement?
+        | {array_assign}  [target]:id [index]:exp [value]:exp
+        | {assign}   [target]:id [value]:exp
+        | {while} [token]:tok_while [condition]:exp [body]:statement
+        | {print} [token]:tok_print [value]:exp
+        | {block}  [token]:l_brace [statements]:statement*;
+
+    exp
+        = {call}  [object]:exp [method]:id [actuals]:exp*
+        | {plus}   [lhs]:exp [token]:plus [rhs]:exp
+        | {minus}  [lhs]:exp [token]:minus [rhs]:exp
+        | {times}   [lhs]:exp [token]:times [rhs]:exp
+        | {and}    [lhs]:exp [token]:and [rhs]:exp
+        | {or}     [l]:exp [r]:exp
+        | {gthan}  [l]:exp [r]:exp
+        | {ge}     [l]:exp [r]:exp
+        | {lthan}  [l]:exp [r]:exp
+        | {less_than}     [lhs]:exp [token]:lt [rhs]:exp
+        | {equal}   [lhs]:exp [token]:eq [rhs]:exp
+        | {noteq}  [l]:exp [r]:exp
+        | {array_lookup} [array]:exp [token]:l_brack [index]:exp
+        | {array_length} [array]:exp [token]:tok_length
+        | {not}    [token]:not [value]:exp
+        | {new_array} [token]:tok_new [size]:exp [i]:exp*
+        | {identifier}    [name]:id
+        | {new_object} [name]:id
+        | {integer_literal} [value]:number
+        | {true}  [token]:tok_true
+        | {false} [token]:tok_false
+        | {this}   [token]:tok_this;
+    
+    type
+        = {int}  [token]:tok_int
+        | {array}  [token]:tok_int
+        | {boolean}  [token]:tok_boolean
+        | {object} [name]:id;

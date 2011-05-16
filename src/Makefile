@@ -3,6 +3,7 @@ TARGET = main/Main.class
 SOURCE = assem/*.java canon/*.java errors/*.java flow_graph/*.java frame/*.java graph/*.java main/*.java semant/*.java symbol/*.java syntaxtree/*.java temp/*.java translate/*.java tree/*.java util/*.java util/conversor/*.java visitor/*.java
 
 $(TARGET): $(SOURCE)
+	java -jar sablecc.jar miniJava.sablecc
 	javac -g main/Main.java
 
 clean: 
@@ -13,7 +14,10 @@ clean:
 	rm -rf frame/*.class
 	rm -rf graph/*.class
 	rm -rf main/*.class
-	rm -rf minijava/*.class
+	rm -rf minijava/analysis/*.*
+	rm -rf minijava/lexer/*.*
+	rm -rf minijava/node/*.*
+	rm -rf minijava/parser/*.*
 	rm -rf semant/*.class
 	rm -rf symbol/*.class
 	rm -rf syntaxtree/*.class

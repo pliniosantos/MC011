@@ -1,0 +1,1 @@
+m args if m < 20 System.out.println 1  
