@@ -4,6 +4,7 @@
 *.com
 *.exe
 *.so
+*.class
 
 # Ignore miniJavaCompiler\bin #
 ###############################
