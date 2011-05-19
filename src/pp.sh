@@ -7,8 +7,16 @@ dir=$1
 #numero de arquivos no diretorio
 num=$(ls $dir"/in" | wc -l)
 
+
+#for ((  i = 0 ;  i <= {5};  i++  ))
+#do
+#  echo "Welcome $i times"
+#done
+
+
 #percorre todos os arquivos
-for (( i=1 ; i <= $num ; i++ ))
+i=1
+while [ $i -le $num ]; # for (( i=1 ; i <= ${num} ; i++ ))
 do
     if [ $i -lt 10 ]
     then
@@ -19,4 +27,6 @@ do
         java main/Main $1/in/$i 2>&1 >/dev/null | tee $f > $1/g15/$i.out
 	cat $1/g15/$i.out >> $1/gall/g15.out
     fi
+    echo iteracao $i
+    i=`expr $i + 1`
 done
