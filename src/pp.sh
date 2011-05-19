@@ -27,6 +27,5 @@ do
         java main/Main $1/in/$i 2>&1 >/dev/null | tee $f > $1/g15/$i.out
 	cat $1/g15/$i.out >> $1/gall/g15.out
     fi
-    echo iteracao $i
     i=`expr $i + 1`
 done
