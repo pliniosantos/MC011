@@ -7,13 +7,6 @@ dir=$1
 #numero de arquivos no diretorio
 num=$(ls $dir"/in" | wc -l)
 
-
-#for ((  i = 0 ;  i <= {5};  i++  ))
-#do
-#  echo "Welcome $i times"
-#done
-
-
 #percorre todos os arquivos
 i=1
 while [ $i -le $num ]; # for (( i=1 ; i <= ${num} ; i++ ))
