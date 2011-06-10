@@ -64,7 +64,7 @@ public class MethodInfo
             formals = formalsTail = nn;
         else
             formalsTail = formalsTail.tail = nn;
-        
+
         formalsTable.put(formal.name, formal);
 		formalsNames.add(formal.name);
 		

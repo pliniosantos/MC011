@@ -138,5 +138,22 @@ public class ClassInfo
 		
 		return true;
 	}
+	
+	public boolean replaceMethodName(MethodInfo method, Symbol newName) 
+	{
+	    try {
+    	    // Remove old registers
+    	    methods.remove(method.name);
+    	    methodsNames.remove(method.name);
+	    } catch (NullPointerException e) {
+	        return false;
+	    }
+
+	    // Add new method name
+	    methods.put(newName, method);
+	    methodsNames.add(newName);
+	    
+	    return true;
+	}
 
 }
