@@ -218,15 +218,7 @@ public class Semantic implements Visitor {
 
             if (env.addMethodFormal(this.methodInfoAtual, varInfo)) {
                 Symbol s = Symbol.symbol(this.methodInfoAtual.name.toString()+varInfo.type.toString());
-                if (this.classInfoAtual.replaceMethodName(this.methodInfoAtual, s)) {
-                    aux.head.accept(this);
-                } else {
-                    err.Error(node, new Object[] { "Formal '"
-                            + varInfo.name.toString() + "' no metodo '"
-                            + methodInfoAtual.name.toString() + "', class '"
-                            + classInfoAtual.name.toString() + "' jah existe" });
-                }
-                
+                aux.head.accept(this);
             } else {
                 err.Error(node, new Object[] { "Formal '"
                         + varInfo.name.toString() + "' no metodo '"
