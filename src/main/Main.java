@@ -17,10 +17,10 @@ import errors.ErrorEchoer;
 import frame.Frame;
 import frame.Proc;
 
+import reg_alloc.RegAlloc;
 import semant.Env;
 import semant.TypeChecker;
 import syntaxtree.Program;
-import syntaxtree.PrettyPrint;
 import translate.Frag;
 import translate.ProcFrag;
 import translate.Translate;
@@ -32,7 +32,7 @@ import minijava.lexer.Lexer;
 import minijava.node.Start;
 import minijava.parser.Parser;
 
-// Uma coisa nao especificada em minijava eh se
+// Uma coisa não especificada em minijava eh se
 // subclasses podem redeclarar atributos.
 // Solucao adotada: podem; perdem o acesso a variavel
 // da super classe se o fizerem.
@@ -55,8 +55,8 @@ public final class Main
 			
 			Start s = parser.parse();
 			
-             		//Uncomment this to print sablecc's AST.
-			System.out.println(s);
+            // the parser is correct(???); no need to print sablecc's AST.
+			//System.out.println(s);
             
 			// ... up until here, classes and package organization
 			// are decided by SableCC
@@ -78,13 +78,16 @@ public final class Main
 			System.gc();
 			
 			// Now, we're using Appel's data structure.
-			// Uncomment this if you wanto to print it here for debugging purposes.
-			//PrettyPrint v1 = new PrettyPrint(System.err);
-			//program.accept(v1);
-
-            //----PROJETO-1: Chamada do pacote semantico ----------------------------------------------
+			// We print it here for debugging purposes.
+            
+            //--------------------------------------------------
+            // It seems everithing is working up until here,
+            // so we'll not print the syntaxtree anymore.
+			// PrettyPrint v1 = new PrettyPrint(System.err);
+			// program.accept(v1);
+            //--------------------------------------------------
 			
-           // now we've got to apply the 2-pass semant analyser.
+	    // now we've got to apply the 2-pass semant analyser.
             ErrorEchoer err = new SimpleError(name);
             Env env = TypeChecker.TypeCheck(err, program);
 
@@ -94,11 +97,73 @@ public final class Main
                 return;
             }
 			
+	    // here the AST is transformed into the Intemediate Representation
+            Frame frame = new x86.Frame();
+            Frag f = Translate.translate(frame, env, program);
+            
+            // no we're done with the syntaxtree structure. make the whole
+            // structure unreacheable and gc.
+            program = null;
+            env = null;
+            err = null;
+            
+            System.gc();
+
+            // external functions and program entry point
+            PrintStream out = new PrintStream("minijava.asm");
+            
+            out.println("    BITS 32");
+            out.println("");
+            out.println("    EXTERN _minijavaExit");
+            out.println("    EXTERN _printInt");
+            out.println("    EXTERN _newObject");
+            out.println("    EXTERN _newArray");
+            out.println("    EXTERN _assertPtr");
+            out.println("    EXTERN _boundCheck");
+            out.println("");
+            out.println("    GLOBAL _minijava_main_1");
+            out.println("");
+            out.println("    SECTION .data");
+            // outputting vtables
+            for ( Frag a = f; a != null; a = a.next )
+                if ( a instanceof VtableFrag )
+                {
+                    VtableFrag v = (VtableFrag) a;
+                    
+                    out.println(v.name+":");
+                    for ( String ss : v.vtable )
+                        out.println("    dd " + ss);
+                }
+            
+            out.println("");
+            out.println("SECTION .text");
+            out.println("");
+            for ( Frag a = f; a != null; a = a.next )
+                if ( a instanceof ProcFrag )
+                {
+                    ProcFrag p = (ProcFrag) a;
+            
+                    // the IR is canonicalized.
+                    TraceSchedule ts = new TraceSchedule(new BasicBlocks(Canon.linearize(p.body)));
+                    
+                    
+                    // Instruction Selection is done                   
+                    List<Instr> instrs = p.frame.codegen(ts.stms);
+                    
+                    instrs = p.frame.procEntryExit2(instrs);
+                                                            
+                    // allocating the registers
+                    RegAlloc r = new RegAlloc(p.frame, instrs);
+                    
+                    // outputting the generated code.
+                    Proc finalProc = p.frame.procEntryExit3(r.instrs);
+                    finalProc.print(out, r);
+                }
 		}
 		catch(Throwable e)
 		{
 			System.err.println(e.getMessage());
-            e.printStackTrace();
+                        e.printStackTrace();
 		}
 		
 		System.exit(0);
